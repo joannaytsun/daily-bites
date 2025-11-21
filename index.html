@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Mogu v3.0</title>
+    <title>Mogu v3.1</title>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -14,23 +14,13 @@
         /* 基礎設定 */
         body { font-family: 'Zen Maru Gothic', 'Nunito', sans-serif; background-color: #F2F2F2; display: flex; justify-content: center; height: 100vh; margin: 0; color: #4A4A4A; user-select: none; -webkit-tap-highlight-color: transparent; overflow: hidden; }
         #app-container { width: 100%; max-width: 440px; height: 100%; background-color: #FDFBF7; position: relative; display: flex; flex-direction: column; }
-        
-        /* 隱藏滾動條 */
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        
-        /* 玻璃質感導航 */
         .glass-nav { background: rgba(253, 251, 247, 0.95); backdrop-filter: blur(10px); border-top: 1px solid rgba(0,0,0,0.05); padding-bottom: env(safe-area-inset-bottom, 20px); }
-        
-        /* 卡片與動畫 */
         .card { background: #FFFFFF; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: transform 0.2s ease; }
         .bouncy:active { transform: scale(0.9); }
         #add-modal { transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); padding-bottom: env(safe-area-inset-bottom, 20px); }
-        
-        /* 顏色系統 */
         .text-meal { color: #8DA399; } .bg-meal { background-color: #8DA399; }
         .text-coffee { color: #B09B82; } .bg-coffee { background-color: #B09B82; }
-        
-        /* 月曆全螢幕優化 (Flexbox Layout) */
         .calendar-container { display: flex; flex-direction: column; height: 100%; padding-bottom: 80px; }
         .calendar-header { padding: 10px 20px; flex-shrink: 0; }
         .calendar-grid-wrapper { flex: 1; display: flex; flex-direction: column; padding: 0 10px 10px 10px; }
@@ -40,24 +30,16 @@
         .calendar-day.has-data { background: #fff; border: 1px solid #eee; cursor: pointer; }
         .calendar-day.today { background-color: #F0F0F0; font-weight: bold; }
         .calendar-img { width: 90%; height: 70%; object-fit: cover; border-radius: 6px; margin-top: 2px; flex-grow: 1; margin-bottom: 4px; }
-        
-        /* 視圖切換 */
         .view-toggle { background: #eee; border-radius: 20px; padding: 3px; display: flex; width: fit-content; margin: 0 auto; }
         .view-btn { padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: bold; color: #888; transition: all 0.2s; }
         .view-btn.active { background: #fff; shadow: 0 2px 4px rgba(0,0,0,0.1); color: #444; }
-
-        /* Input 優化 */
         input[type="datetime-local"] { -webkit-appearance: none; background: transparent; font-family: inherit; color: #555; }
-        
-        /* 統計卡片左右滑動指示 */
         .swipe-hint { animation: swipeAnim 2s infinite; opacity: 0.5; }
         @keyframes swipeAnim { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(5px); } }
     </style>
 </head>
 <body>
-
     <div id="app-container">
-        <!-- Header -->
         <div class="pt-12 pb-2 px-6 bg-transparent z-10 flex-shrink-0">
             <div class="flex justify-between items-center mb-2">
                 <h1 class="text-2xl font-bold tracking-widest text-gray-700" id="header-title">食記</h1>
@@ -68,12 +50,8 @@
             </div>
         </div>
 
-        <!-- Content -->
-        <div class="flex-1 overflow-y-auto no-scrollbar relative" id="feed-container">
-            <!-- 內容由 JS 生成 -->
-        </div>
+        <div class="flex-1 overflow-y-auto no-scrollbar relative" id="feed-container"></div>
 
-        <!-- Tab Bar -->
         <div class="glass-nav absolute bottom-0 w-full flex justify-between items-end z-20 px-6 pt-2">
             <button onclick="switchTab('meal')" class="flex flex-col items-center gap-1 bouncy w-12 pb-2"><i data-lucide="utensils" id="icon-meal" class="w-6 h-6"></i><span class="text-[10px] font-bold" id="text-meal">三餐</span></button>
             <button onclick="switchTab('coffee')" class="flex flex-col items-center gap-1 bouncy w-12 pb-2"><i data-lucide="coffee" id="icon-coffee" class="w-6 h-6"></i><span class="text-[10px] font-bold" id="text-coffee">咖啡</span></button>
@@ -82,7 +60,6 @@
             <button onclick="switchTab('me')" class="flex flex-col items-center gap-1 bouncy w-12 pb-2"><i data-lucide="user" id="icon-me" class="w-6 h-6"></i><span class="text-[10px] font-bold" id="text-me">我的</span></button>
         </div>
 
-        <!-- Add Modal -->
         <div id="add-modal" class="absolute inset-x-0 bottom-0 h-[96%] bg-white rounded-t-[30px] shadow-2xl z-30 transform translate-y-full flex flex-col">
             <div class="px-6 pt-6 pb-2 flex justify-between items-center flex-shrink-0">
                 <button onclick="closeModal()" class="text-gray-400 p-2">取消</button>
@@ -91,7 +68,6 @@
             </div>
 
             <div class="flex-1 overflow-y-auto px-6 pb-10">
-                <!-- Type Switch -->
                 <div class="flex justify-center my-4">
                     <div class="bg-gray-100 p-1 rounded-full flex relative w-48">
                         <div id="segment-overlay" class="absolute left-1 top-1 w-[calc(50%-4px)] h-[calc(100%-8px)] bg-white rounded-full shadow-sm transition-all duration-300"></div>
@@ -100,7 +76,6 @@
                     </div>
                 </div>
 
-                <!-- Photo & Date -->
                 <div class="flex gap-4 mb-6 h-32">
                     <div class="relative w-32 h-32 flex-shrink-0 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center overflow-hidden">
                         <input type="file" id="file-input" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 z-20 cursor-pointer" onchange="handleImageUpload(this)">
@@ -118,38 +93,29 @@
                     </div>
                 </div>
 
-                <!-- Inputs -->
                 <div class="space-y-4">
                     <div class="flex gap-3 mb-2">
                         <button onclick="toggleSource('shop')" id="btn-shop" class="flex-1 py-2 rounded-full bg-gray-800 text-white text-xs font-bold">店家</button>
                         <button onclick="toggleSource('home')" id="btn-home" class="flex-1 py-2 rounded-full bg-gray-100 text-gray-400 text-xs font-bold">自己做</button>
                     </div>
-
                     <div id="shop-section">
-                        <!-- Address with Auto-fill -->
                         <div class="flex items-center gap-2 mb-3">
                             <div class="relative flex-1">
                                 <i data-lucide="map-pin" class="absolute left-3 top-3.5 w-4 h-4 text-gray-400"></i>
                                 <input type="text" id="input-address" placeholder="點右側定位或手動輸入地址" class="w-full p-3 pl-9 bg-gray-50 rounded-xl text-xs outline-none focus:bg-white focus:ring-2 focus:ring-gray-100 text-gray-600">
                             </div>
-                            <button onclick="getCurrentLocation()" class="bg-gray-100 p-3 rounded-xl text-gray-500 hover:bg-gray-200 transition flex-shrink-0 w-12 flex justify-center">
-                                <i data-lucide="crosshair" class="w-4 h-4" id="loc-icon"></i>
-                            </button>
+                            <button onclick="getCurrentLocation()" class="bg-gray-100 p-3 rounded-xl text-gray-500 hover:bg-gray-200 transition flex-shrink-0 w-12 flex justify-center"><i data-lucide="crosshair" class="w-4 h-4" id="loc-icon"></i></button>
                         </div>
-
                         <input type="text" id="input-shop" placeholder="輸入店名 (例如: 星巴克)" class="w-full p-3 bg-gray-50 rounded-xl text-sm outline-none mb-2 focus:bg-white focus:ring-2 focus:ring-gray-100 font-bold">
                     </div>
-                    
                     <div class="relative">
                         <span class="absolute left-4 top-3.5 text-gray-400 text-sm">$</span>
                         <input type="number" id="input-price" placeholder="價格" class="w-full p-3 pl-8 bg-gray-50 rounded-xl text-sm outline-none focus:bg-white focus:ring-2 focus:ring-gray-100">
                     </div>
-
                     <div class="bg-gray-50 rounded-xl p-3 flex justify-between items-center">
                         <span class="text-sm font-bold text-gray-500">喜好</span>
                         <div class="flex gap-2 text-2xl select-none" id="rating-container"></div>
                     </div>
-
                     <textarea id="input-note" placeholder="寫點心得..." class="w-full p-3 bg-gray-50 rounded-xl text-sm outline-none h-20 resize-none focus:bg-white focus:ring-2 focus:ring-gray-100"></textarea>
                 </div>
             </div>
@@ -158,18 +124,14 @@
 
     <script>
         lucide.createIcons();
-        
-        // 核心變數
         let currentTab = 'meal';
         let postType = 'meal';
         let viewMode = 'list';
         let currentRating = 3;
         let uploadedImageBase64 = null;
         let sourceMode = 'shop';
-        
-        // 月曆與統計控制
-        let calendarDate = new Date(); // 控制月曆顯示的月份
-        let statsDate = new Date();    // 控制統計顯示的月份
+        let calendarDate = new Date();
+        let statsDate = new Date();
 
         const defaultData = {
             meal: [{ id: 1, date: '2025-05-20T12:30', shop: 'Mogu Diner', address: '台北市信義區', price: 300, rating: 5, note: '範例：點擊定位按鈕可以自動抓取地址！', img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&q=80', icon: '🍙' }],
@@ -177,467 +139,18 @@
             friends: [{ user: '小幫手', action: '提示', shop: '這裡', time: '剛剛', img: 'https://images.unsplash.com/photo-1552611052-33e04de081de', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Mogu' }]
         };
 
+        // 核心：讀取與資料遷移 (Migration V2 -> V3)
         function loadData() {
-            const stored = localStorage.getItem('moguData_v3');
-            return stored ? JSON.parse(stored) : defaultData;
-        }
-        function saveData(newData) { localStorage.setItem('moguData_v3', JSON.stringify(newData)); }
+            // 1. 先試著讀取 V3 (新版)
+            const storedV3 = localStorage.getItem('moguData_v3');
+            if (storedV3) {
+                return JSON.parse(storedV3);
+            }
 
-        let appData = loadData();
-
-        // 主渲染函數
-        function renderFeed() {
-            const container = document.getElementById('feed-container');
-            const viewToggle = document.getElementById('view-toggle-container');
-            
-            // Header 更新
-            const titles = { meal: '本日食記', coffee: '咖啡紀錄', friends: '好友動態', me: '我的帳務' };
-            const colors = { meal: 'text-meal', coffee: 'text-coffee', friends: 'text-gray-700', me: 'text-gray-800' };
-            document.getElementById('header-title').innerText = titles[currentTab];
-            document.getElementById('header-title').className = `text-2xl font-bold tracking-widest ${colors[currentTab]}`;
-
-            // Tab Bar 更新
-            ['meal', 'coffee', 'friends', 'me'].forEach(t => {
-                const icon = document.getElementById(`icon-${t}`);
-                const text = document.getElementById(`text-${t}`);
-                const isActive = t === currentTab;
-                const activeColor = t === 'meal' ? 'text-meal' : (t === 'coffee' ? 'text-coffee' : 'text-gray-800');
+            // 2. 如果 V3 是空的，檢查有沒有 V2 (舊版)
+            const storedV2 = localStorage.getItem('moguData_v2');
+            if (storedV2) {
+                console.log("發現舊版資料，正在遷移...");
+                const oldData = JSON.parse(storedV2);
                 
-                icon.className = `w-6 h-6 transition-colors ${isActive ? activeColor : 'text-gray-300'}`;
-                text.className = `text-[10px] font-bold transition-colors ${isActive ? activeColor : 'text-gray-300'}`;
-            });
-
-            // 視圖切換按鈕
-            if(currentTab === 'meal' || currentTab === 'coffee') {
-                viewToggle.classList.remove('hidden');
-                document.getElementById('btn-view-list').className = `view-btn ${viewMode === 'list' ? 'active' : ''}`;
-                document.getElementById('btn-view-calendar').className = `view-btn ${viewMode === 'calendar' ? 'active' : ''}`;
-            } else {
-                viewToggle.classList.add('hidden');
-            }
-
-            container.innerHTML = ''; // Clear
-
-            if(currentTab === 'me') renderStats();
-            else if(currentTab === 'friends') renderFriends();
-            else if(viewMode === 'calendar') renderCalendar();
-            else renderList();
-            
-            lucide.createIcons();
-        }
-
-        // 列表模式 (List View)
-        function renderList() {
-            const container = document.getElementById('feed-container');
-            // 增加 padding-bottom 避免被 tab bar 擋住
-            container.className = "flex-1 overflow-y-auto no-scrollbar px-4 pb-28"; 
-            
-            const items = appData[currentTab] || [];
-            // 排序：新的日期在上面
-            const sortedItems = [...items].sort((a, b) => new Date(b.date) - new Date(a.date));
-
-            sortedItems.forEach(item => {
-                let stars = '';
-                for(let i=0; i<5; i++) stars += `<span class="${i < item.rating ? '' : 'opacity-20 grayscale'} text-sm mr-0.5">${item.icon}</span>`;
-                
-                let mapLink = '';
-                if(item.address && item.address.length > 0) {
-                    // 搜尋地址 + 店名
-                    const query = item.shop && item.shop !== '自己做' ? `${item.address} ${item.shop}` : item.address;
-                    mapLink = `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}" target="_blank" class="text-xs text-blue-500 flex items-center mt-1 hover:underline truncate"><i data-lucide="map-pin" class="w-3 h-3 mr-1 flex-shrink-0"></i> ${item.address}</a>`;
-                }
-
-                const dateObj = new Date(item.date);
-                const displayDate = `${dateObj.getMonth()+1}/${dateObj.getDate()} ${String(dateObj.getHours()).padStart(2,'0')}:${String(dateObj.getMinutes()).padStart(2,'0')}`;
-
-                container.innerHTML += `
-                <div class="card p-0 mb-6 overflow-hidden group">
-                    <div class="w-full h-56 bg-gray-100 relative">
-                        <img src="${item.img}" class="w-full h-full object-cover">
-                        ${item.price ? `<div class="absolute bottom-2 right-2 bg-white/90 backdrop-blur px-2 py-1 rounded-lg text-xs font-bold text-gray-700">NT$ ${item.price}</div>` : ''}
-                        <button onclick="deleteItem(${item.id})" class="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                    </div>
-                    <div class="p-4">
-                        <div class="flex justify-between items-start mb-1">
-                            <h3 class="font-bold text-gray-800 text-lg">${item.shop}</h3>
-                            <div class="flex">${stars}</div>
-                        </div>
-                        ${mapLink}
-                        <p class="text-xs text-gray-400 mt-2 flex items-center"><i data-lucide="clock" class="w-3 h-3 mr-1"></i> ${displayDate}</p>
-                        <p class="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap mt-2">${item.note}</p>
-                    </div>
-                </div>`;
-            });
-            if(items.length === 0) container.innerHTML = `<div class="text-center mt-20 text-gray-300 text-sm">目前沒有紀錄</div>`;
-        }
-
-        // 月曆模式 (Calendar View - Flexbox No Scroll)
-        function renderCalendar() {
-            const container = document.getElementById('feed-container');
-            container.className = "flex-1 overflow-hidden relative"; // 禁止滾動
-
-            const items = appData[currentTab] || [];
-            const year = calendarDate.getFullYear();
-            const month = calendarDate.getMonth(); // 0-11
-            
-            const firstDay = new Date(year, month, 1);
-            const lastDay = new Date(year, month + 1, 0);
-            const daysInMonth = lastDay.getDate();
-            const startDayIndex = firstDay.getDay(); // 0=Sun
-
-            // Header
-            let html = `
-            <div class="calendar-container">
-                <div class="calendar-header flex justify-between items-center">
-                    <button onclick="changeCalendarMonth(-1)" class="p-2 bg-white rounded-full shadow-sm active:scale-90 transition"><i data-lucide="chevron-left" class="w-5 h-5 text-gray-600"></i></button>
-                    <span class="font-bold text-lg text-gray-700">${year}年 ${month + 1}月</span>
-                    <button onclick="changeCalendarMonth(1)" class="p-2 bg-white rounded-full shadow-sm active:scale-90 transition"><i data-lucide="chevron-right" class="w-5 h-5 text-gray-600"></i></button>
-                </div>
-                
-                <div class="calendar-grid-wrapper">
-                    <div class="calendar-week-row">
-                        <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
-                    </div>
-                    <div class="calendar-days-grid">
-            `;
-
-            // Empty slots
-            for(let i=0; i<startDayIndex; i++) {
-                html += `<div></div>`;
-            }
-
-            // Days
-            const todayStr = new Date().toISOString().split('T')[0];
-
-            for(let d=1; d<=daysInMonth; d++) {
-                // 格式化 YYYY-MM-DD
-                const currentStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                // 找紀錄
-                const dayItems = items.filter(i => i.date.startsWith(currentStr));
-                const hasData = dayItems.length > 0;
-                const thumb = hasData ? dayItems[dayItems.length-1].img : '';
-                const isToday = currentStr === todayStr;
-
-                html += `
-                <div class="calendar-day ${hasData ? 'has-data' : ''} ${isToday ? 'today' : ''}" onclick="${hasData ? `alert('${currentStr} 有 ${dayItems.length} 筆紀錄')` : ''}">
-                    <span class="${hasData ? 'font-bold text-gray-800' : 'text-gray-400'} z-10">${d}</span>
-                    ${hasData ? `<img src="${thumb}" class="calendar-img">` : ''}
-                </div>`;
-            }
-
-            html += `</div></div></div>`;
-            container.innerHTML = html;
-        }
-
-        // 統計模式 (Stats with Swipe)
-        function renderStats() {
-            const container = document.getElementById('feed-container');
-            container.className = "flex-1 overflow-y-auto no-scrollbar px-4 pb-28";
-            
-            const y = statsDate.getFullYear();
-            const m = statsDate.getMonth() + 1;
-            const monthStr = `${y}-${String(m).padStart(2,'0')}`;
-
-            // Filter Data
-            const filterByMonth = (list) => list.filter(i => i.date.startsWith(monthStr));
-            const mealMonthly = filterByMonth(appData.meal);
-            const coffeeMonthly = filterByMonth(appData.coffee);
-            const mealTotal = mealMonthly.reduce((sum, i) => sum + Number(i.price), 0);
-            const coffeeTotal = coffeeMonthly.reduce((sum, i) => sum + Number(i.price), 0);
-            const grandTotal = mealTotal + coffeeTotal;
-
-            container.innerHTML = `
-            <div class="px-2 pt-4">
-                <!-- Month Navigator -->
-                <div class="flex justify-between items-center mb-6 bg-white p-2 rounded-2xl shadow-sm">
-                    <button onclick="changeStatsMonth(-1)" class="p-2 hover:bg-gray-100 rounded-full"><i data-lucide="chevron-left" class="w-5 h-5 text-gray-400"></i></button>
-                    <div class="text-center">
-                        <p class="text-xs text-gray-400">月支出總覽</p>
-                        <h2 class="text-lg font-bold text-gray-700">${y}年 ${m}月</h2>
-                    </div>
-                    <button onclick="changeStatsMonth(1)" class="p-2 hover:bg-gray-100 rounded-full"><i data-lucide="chevron-right" class="w-5 h-5 text-gray-400"></i></button>
-                </div>
-
-                <!-- Main Card (Swipeable Area) -->
-                <div id="stats-card" class="bg-white p-6 rounded-3xl shadow-sm mb-6 relative overflow-hidden" 
-                     ontouchstart="handleTouchStart(event)" ontouchend="handleTouchEnd(event)">
-                    
-                    <div class="text-center mb-6">
-                        <h2 class="text-4xl font-bold text-gray-800">NT$ ${grandTotal.toLocaleString()}</h2>
-                        <div class="mt-2 flex justify-center gap-1 text-gray-300">
-                            <span class="w-1 h-1 rounded-full bg-gray-300"></span>
-                            <span class="w-1 h-1 rounded-full bg-gray-300"></span>
-                            <span class="w-1 h-1 rounded-full bg-gray-300"></span>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-gray-50 p-4 rounded-2xl flex flex-col items-center border-l-4 border-[#8DA399]">
-                            <span class="text-xs text-gray-400 mb-1">三餐 (${mealMonthly.length})</span>
-                            <span class="text-lg font-bold text-gray-700">$${mealTotal.toLocaleString()}</span>
-                        </div>
-                        <div class="bg-gray-50 p-4 rounded-2xl flex flex-col items-center border-l-4 border-[#B09B82]">
-                            <span class="text-xs text-gray-400 mb-1">咖啡 (${coffeeMonthly.length})</span>
-                            <span class="text-lg font-bold text-gray-700">$${coffeeTotal.toLocaleString()}</span>
-                        </div>
-                    </div>
-                    
-                    <!-- Swipe Hint -->
-                    <div class="absolute right-2 top-1/2 transform -translate-y-1/2 swipe-hint">
-                        <i data-lucide="chevron-right" class="w-4 h-4 text-gray-300"></i>
-                    </div>
-                    <div class="absolute left-2 top-1/2 transform -translate-y-1/2 swipe-hint rotate-180">
-                        <i data-lucide="chevron-right" class="w-4 h-4 text-gray-300"></i>
-                    </div>
-                </div>
-
-                <!-- Pie Chart Bar -->
-                <div class="bg-white p-6 rounded-2xl shadow-sm mb-8">
-                    <h3 class="font-bold text-gray-600 mb-4 text-sm">支出佔比</h3>
-                    <div class="w-full h-4 bg-gray-100 rounded-full overflow-hidden flex">
-                        <div style="width: ${(mealTotal/grandTotal)*100 || 0}%" class="h-full bg-meal transition-all duration-500"></div>
-                        <div style="width: ${(coffeeTotal/grandTotal)*100 || 0}%" class="h-full bg-coffee transition-all duration-500"></div>
-                    </div>
-                    <div class="flex justify-between mt-3 text-xs text-gray-400">
-                        <span class="flex items-center"><div class="w-2 h-2 rounded-full bg-meal mr-1"></div>三餐 ${grandTotal ? Math.round((mealTotal/grandTotal)*100) : 0}%</span>
-                        <span class="flex items-center"><div class="w-2 h-2 rounded-full bg-coffee mr-1"></div>咖啡 ${grandTotal ? Math.round((coffeeTotal/grandTotal)*100) : 0}%</span>
-                    </div>
-                </div>
-
-                <!-- Backup -->
-                <div class="bg-white p-4 rounded-2xl shadow-sm">
-                    <h3 class="font-bold text-gray-600 mb-3 text-sm">資料管理</h3>
-                    <div class="flex gap-3">
-                        <button onclick="exportData()" class="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-gray-200"><i data-lucide="download" class="w-4 h-4"></i> 匯出</button>
-                        <button onclick="importData()" class="flex-1 bg-gray-800 text-white py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-gray-700"><i data-lucide="upload" class="w-4 h-4"></i> 匯入</button>
-                    </div>
-                </div>
-            </div>`;
-        }
-
-        // 好友 (Mock)
-        function renderFriends() {
-            const container = document.getElementById('feed-container');
-            container.className = "flex-1 overflow-y-auto no-scrollbar px-4 pb-28";
-            container.innerHTML = `<div class="p-4 bg-gray-100 rounded-xl text-center text-xs text-gray-400 mb-4">好友功能需連網</div>`;
-            appData.friends.forEach(item => {
-                container.innerHTML += `
-                <div class="card p-4 mb-4 flex gap-4">
-                    <div class="w-10 h-10 rounded-full bg-gray-100 overflow-hidden"><img src="${item.avatar}" class="w-full h-full object-cover"></div>
-                    <div class="flex-1">
-                        <div class="flex justify-between items-start mb-2">
-                            <div><span class="font-bold text-sm text-gray-800">${item.user}</span><span class="text-xs text-gray-500 ml-2">${item.action} @ ${item.shop}</span></div>
-                            <span class="text-[10px] text-gray-400">${item.time}</span>
-                        </div>
-                        <div class="h-32 rounded-xl overflow-hidden bg-gray-100"><img src="${item.img}" class="w-full h-full object-cover"></div>
-                    </div>
-                </div>`;
-            });
-        }
-
-        // 邏輯控制
-        function switchTab(t) { currentTab = t; viewMode = 'list'; renderFeed(); }
-        function setViewMode(mode) { viewMode = mode; renderFeed(); }
-        
-        function changeCalendarMonth(offset) {
-            calendarDate.setMonth(calendarDate.getMonth() + offset);
-            renderCalendar();
-        }
-        function changeStatsMonth(offset) {
-            statsDate.setMonth(statsDate.getMonth() + offset);
-            renderStats();
-        }
-
-        // 左右滑動偵測 (Swipe)
-        let touchStartX = 0;
-        function handleTouchStart(e) { touchStartX = e.changedTouches[0].screenX; }
-        function handleTouchEnd(e) {
-            const touchEndX = e.changedTouches[0].screenX;
-            if (touchEndX < touchStartX - 50) changeStatsMonth(1); // Swipe Left -> Next Month
-            if (touchEndX > touchStartX + 50) changeStatsMonth(-1); // Swipe Right -> Prev Month
-        }
-
-        // Modal & Form
-        function openModal() {
-            document.getElementById('add-modal').classList.remove('translate-y-full');
-            setPostType(currentTab === 'coffee' ? 'coffee' : 'meal');
-            resetForm();
-            // 設定預設時間為現在 (ISO String cut to minutes)
-            const now = new Date();
-            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-            document.getElementById('input-date').value = now.toISOString().slice(0,16);
-        }
-        function closeModal() { document.getElementById('add-modal').classList.add('translate-y-full'); }
-        
-        function setPostType(type) {
-            postType = type;
-            document.getElementById('segment-overlay').style.transform = type === 'meal' ? 'translateX(0)' : 'translateX(100%)';
-            document.getElementById('save-btn').className = `font-bold p-2 ${type === 'meal' ? 'text-meal' : 'text-coffee'}`;
-            renderRatingInput();
-        }
-
-        function renderRatingInput() {
-            const container = document.getElementById('rating-container');
-            const icon = postType === 'meal' ? '🍙' : '🫘';
-            container.innerHTML = '';
-            for(let i=1; i<=5; i++) container.innerHTML += `<span onclick="setRating(${i})" class="${i<=currentRating ? '' : 'opacity-30'} cursor-pointer hover:scale-110 transition">${icon}</span>`;
-        }
-        function setRating(r) { currentRating = r; renderRatingInput(); }
-
-        function toggleSource(mode) {
-            sourceMode = mode;
-            const btnShop = document.getElementById('btn-shop');
-            const btnHome = document.getElementById('btn-home');
-            const shopSection = document.getElementById('shop-section');
-            const inputShop = document.getElementById('input-shop');
-
-            if(mode === 'home') {
-                btnHome.className = 'flex-1 py-2 rounded-full bg-gray-800 text-white text-xs font-bold transition';
-                btnShop.className = 'flex-1 py-2 rounded-full bg-gray-100 text-gray-400 text-xs font-bold transition';
-                shopSection.style.display = 'none';
-                inputShop.value = '自己做';
-            } else {
-                btnShop.className = 'flex-1 py-2 rounded-full bg-gray-800 text-white text-xs font-bold transition';
-                btnHome.className = 'flex-1 py-2 rounded-full bg-gray-100 text-gray-400 text-xs font-bold transition';
-                shopSection.style.display = 'block';
-                if(inputShop.value === '自己做') inputShop.value = '';
-            }
-        }
-
-        // 定位與地址轉換 (Reverse Geocoding)
-        function getCurrentLocation() {
-            const btn = document.getElementById('loc-icon').parentElement;
-            const icon = document.getElementById('loc-icon');
-            
-            if(!navigator.geolocation) { alert('瀏覽器不支援定位'); return; }
-            
-            // Loading animation
-            icon.setAttribute('class', 'w-4 h-4 animate-spin');
-            icon.innerHTML = ''; // clear existing icon
-
-            navigator.geolocation.getCurrentPosition(async (position) => {
-                const lat = position.coords.latitude;
-                const lon = position.coords.longitude;
-                
-                try {
-                    // 使用 OpenStreetMap Nominatim API 進行反向地理編碼 (免費，無需 Key)
-                    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=zh-TW`);
-                    const data = await response.json();
-                    
-                    if(data && data.address) {
-                        // 組合地址：縣市 + 區 + 路
-                        let addr = '';
-                        const a = data.address;
-                        // 簡單組合邏輯
-                        addr += (a.city || a.county || '') + (a.suburb || a.town || a.district || '') + (a.road || '');
-                        if(!addr) addr = data.display_name.split(',')[0]; // Fallback
-
-                        document.getElementById('input-address').value = addr;
-                    } else {
-                        document.getElementById('input-address').value = `${lat.toFixed(3)}, ${lon.toFixed(3)}`;
-                    }
-                    
-                    // Success Icon
-                    icon.setAttribute('class', 'w-4 h-4 text-green-600');
-                    icon.innerHTML = '<polyline points="20 6 9 17 4 12"></polyline>'; // checkmark
-                    
-                } catch (e) {
-                    console.error(e);
-                    alert('無法取得地址名稱，請手動輸入');
-                    document.getElementById('input-address').value = `${lat.toFixed(3)}, ${lon.toFixed(3)}`;
-                } finally {
-                    // Restore icon after 2s
-                    setTimeout(() => {
-                        icon.setAttribute('class', 'w-4 h-4 text-gray-500');
-                        icon.innerHTML = '<circle cx="12" cy="12" r="10"></circle><line x1="22" y1="12" x2="18" y2="12"></line><line x1="6" y1="12" x2="2" y2="12"></line><line x1="12" y1="6" x2="12" y2="2"></line><line x1="12" y1="22" x2="12" y2="18"></line>'; 
-                        lucide.createIcons();
-                    }, 2000);
-                }
-            }, () => {
-                alert('無法獲取位置，請檢查權限');
-                icon.setAttribute('class', 'w-4 h-4');
-                lucide.createIcons();
-            });
-        }
-
-        function handleImageUpload(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    uploadedImageBase64 = e.target.result;
-                    const img = document.getElementById('preview-img');
-                    img.src = e.target.result;
-                    img.classList.remove('hidden');
-                    document.getElementById('upload-placeholder').classList.add('hidden');
-                }
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-
-        function resetForm() {
-            document.getElementById('input-shop').value = '';
-            document.getElementById('input-address').value = '';
-            document.getElementById('input-price').value = '';
-            document.getElementById('input-note').value = '';
-            document.getElementById('file-input').value = '';
-            document.getElementById('preview-img').classList.add('hidden');
-            document.getElementById('upload-placeholder').classList.remove('hidden');
-            uploadedImageBase64 = null;
-            currentRating = 3;
-            toggleSource('shop');
-            renderRatingInput();
-        }
-
-        function savePost() {
-            const shop = document.getElementById('input-shop').value || '未命名';
-            const address = document.getElementById('input-address').value || '';
-            const price = document.getElementById('input-price').value;
-            const note = document.getElementById('input-note').value;
-            const dateInput = document.getElementById('input-date').value; // YYYY-MM-DDTHH:mm
-            const img = uploadedImageBase64 || 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=500&q=80';
-
-            if(!dateInput) { alert('請選擇日期'); return; }
-
-            appData[postType].push({
-                id: Date.now(),
-                date: dateInput, // 存 ISO 格式
-                shop: shop,
-                address: address,
-                price: price,
-                rating: currentRating,
-                note: note,
-                img: img,
-                icon: postType === 'meal' ? '🍙' : '🫘'
-            });
-            saveData(appData);
-            closeModal();
-            if(currentTab !== 'friends' && currentTab !== 'me') switchTab(postType);
-            else renderFeed();
-        }
-
-        function deleteItem(id) {
-            if(confirm('刪除此紀錄？')) {
-                appData[currentTab] = appData[currentTab].filter(i => i.id !== id);
-                saveData(appData);
-                renderFeed();
-            }
-        }
-
-        function exportData() {
-            navigator.clipboard.writeText(localStorage.getItem('moguData_v3')).then(() => alert('資料代碼已複製！'));
-        }
-        function importData() {
-            const input = prompt('貼上備份代碼：');
-            if(input) {
-                try {
-                    localStorage.setItem('moguData_v3', input);
-                    location.reload();
-                } catch(e) { alert('代碼錯誤'); }
-            }
-        }
-
-        // Init
-        renderFeed();
-    </script>
-</body>
-</html>
+                // 轉換格式：舊版的 date 可能
