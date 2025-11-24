@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Mogu V3.5</title>
+    <title>Mogu V3.7</title>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -14,34 +14,68 @@
         body { font-family: 'Zen Maru Gothic', 'Nunito', sans-serif; background-color: #F2F2F2; display: flex; justify-content: center; min-height: 100vh; margin: 0; color: #4A4A4A; user-select: none; -webkit-tap-highlight-color: transparent; overflow: hidden; }
         #app-container { width: 100%; max-width: 420px; height: 100dvh; background-color: #FDFBF7; position: relative; overflow: hidden; display: flex; flex-direction: column; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .glass-nav { background: rgba(253, 251, 247, 0.98); backdrop-filter: blur(10px); border-top: 1px solid rgba(0,0,0,0.05); }
+        
+        /* 導航層級設定 */
+        .glass-nav { background: rgba(253, 251, 247, 0.98); backdrop-filter: blur(10px); border-top: 1px solid rgba(0,0,0,0.05); z-index: 50; }
         .card { background: #FFFFFF; border-radius: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); transform: translateZ(0); }
         .bouncy:active { transform: scale(0.95); transition: transform 0.1s; }
-        #add-modal, #data-modal { transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1); will-change: transform; }
+        
+        /* Modal 層級最高 */
+        #add-modal, #data-modal, #month-picker-modal { transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1); will-change: transform; z-index: 100; }
+        
         .text-meal { color: #8DA399; } .bg-meal { background-color: #8DA399; }
         .text-coffee { color: #B09B82; } .bg-coffee { background-color: #B09B82; }
         #preview-img { width: 100%; height: 100%; object-fit: cover; border-radius: 16px; display: none; }
         
-        /* V3.5 月曆樣式調整：垂直滾動 */
-        .calendar-wrapper { padding-bottom: 40px; }
-        .calendar-month-block { margin-bottom: 24px; }
-        .calendar-month-title { font-weight: bold; font-size: 18px; color: #666; padding: 0 16px 12px 16px; position: sticky; top: 0; background: #FDFBF7; z-index: 5; display: flex; align-items: center; }
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; padding: 0 16px; width: 100%; box-sizing: border-box; }
-        .calendar-day { aspect-ratio: 1; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; font-size: 12px; padding-top: 4px; position: relative; background: #fcfcfc; overflow: hidden; }
-        .calendar-day.has-data { background: #fff; border: 1px solid #eee; cursor: pointer; }
-        .calendar-img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; opacity: 0.8; z-index: 0; }
-        .calendar-day span { z-index: 10; font-weight: bold; text-shadow: 0 1px 2px rgba(255,255,255,0.8); }
+        /* V3.7 月曆優化樣式 */
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; padding: 0 16px 16px 16px; font-weight: bold; font-size: 18px; color: #555; }
+        .calendar-title-btn { padding: 4px 8px; border-radius: 8px; cursor: pointer; transition: background 0.2s; }
+        .calendar-title-btn:active { background: #eee; }
         
+        .calendar-grid { 
+            display: grid; 
+            grid-template-columns: repeat(7, 1fr); 
+            gap: 6px; /* 格子間距加大一點點 */
+            padding: 0 12px; /* 減少左右邊距，讓月曆變大 */
+            width: 100%; 
+            box-sizing: border-box; 
+        }
+        .calendar-day { 
+            aspect-ratio: 0.85; /*稍微長一點，容納圖片 */
+            border-radius: 12px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: flex-start; 
+            font-size: 14px; /* 字體放大 */
+            padding-top: 4px; 
+            position: relative; 
+            background: #fff; 
+            border: 1px solid #f0f0f0;
+            overflow: hidden; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+        .calendar-day.empty { background: transparent; border: none; box-shadow: none; }
+        .calendar-day.has-data { border: 2px solid #8DA399; cursor: pointer; }
+        .calendar-img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; opacity: 0.85; z-index: 0; }
+        .calendar-day span { z-index: 10; font-weight: 700; text-shadow: 0 1px 3px rgba(255,255,255,1); }
+        .week-header { display: grid; grid-template-columns: repeat(7, 1fr); padding: 0 12px 8px 12px; text-align: center; font-size: 12px; color: #999; }
+
         .view-toggle { background: #eee; border-radius: 20px; padding: 3px; display: flex; width: fit-content; margin: 0 auto; }
         .view-btn { padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: bold; color: #888; transition: all 0.2s; }
         .view-btn.active { background: #fff; shadow: 0 2px 4px rgba(0,0,0,0.1); color: #444; }
+
+        /* 月份選擇器 Modal */
+        .month-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 20px; }
+        .month-btn { padding: 16px; background: #f5f5f5; border-radius: 12px; text-align: center; font-weight: bold; color: #555; }
+        .month-btn:active { background: #ddd; transform: scale(0.95); }
     </style>
 </head>
 <body>
 
     <div id="app-container">
         <!-- Header -->
-        <div class="pt-14 pb-2 px-6 bg-transparent z-10">
+        <div class="pt-14 pb-2 px-6 bg-transparent z-50 relative">
             <div class="flex justify-between items-center mb-2">
                 <h1 class="text-2xl font-bold tracking-widest text-gray-700" id="header-title">食記</h1>
             </div>
@@ -56,7 +90,7 @@
         <div class="flex-1 overflow-y-auto no-scrollbar px-4 pb-28" id="feed-container" style="will-change: transform;"></div>
 
         <!-- Tab Bar -->
-        <div class="glass-nav absolute bottom-0 w-full pb-8 pt-3 px-6 flex justify-between items-end z-20">
+        <div class="glass-nav absolute bottom-0 w-full pb-8 pt-3 px-6 flex justify-between items-end">
             <button onclick="switchTab('meal')" class="flex flex-col items-center gap-1 bouncy w-12"><i data-lucide="utensils" id="icon-meal" class="w-6 h-6"></i><span class="text-[10px] font-bold" id="text-meal">三餐</span></button>
             <button onclick="switchTab('coffee')" class="flex flex-col items-center gap-1 bouncy w-12"><i data-lucide="coffee" id="icon-coffee" class="w-6 h-6"></i><span class="text-[10px] font-bold" id="text-coffee">咖啡</span></button>
             <button onclick="openModal()" class="bouncy mb-4 -mt-8 bg-gray-800 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg"><i data-lucide="plus" class="w-7 h-7"></i></button>
@@ -65,7 +99,7 @@
         </div>
 
         <!-- Add/Edit Modal -->
-        <div id="add-modal" class="absolute inset-x-0 bottom-0 h-[95%] bg-white rounded-t-[30px] shadow-2xl z-30 transform translate-y-full flex flex-col">
+        <div id="add-modal" class="absolute inset-x-0 bottom-0 h-[95%] bg-white rounded-t-[30px] shadow-2xl transform translate-y-full flex flex-col">
             <div class="px-6 pt-6 pb-2 flex justify-between items-center">
                 <button onclick="closeModal()" class="text-gray-400 p-2">取消</button>
                 <span class="font-bold text-lg text-gray-700" id="modal-title">紀錄一下</span>
@@ -102,9 +136,7 @@
                     </div>
 
                     <div id="shop-section">
-                        <!-- V3.5 新增：品項欄位 -->
                         <input type="text" id="input-item" placeholder="吃了/喝了什麼 (例: 冰拿鐵)" class="w-full p-3 bg-gray-50 rounded-xl text-sm outline-none mb-2 focus:bg-white focus:ring-2 focus:ring-gray-100 font-bold">
-                        
                         <input type="text" id="input-shop" placeholder="店名 (例: 星巴克)" class="w-full p-3 bg-gray-50 rounded-xl text-sm outline-none mb-2 focus:bg-white focus:ring-2 focus:ring-gray-100">
                         <div class="flex items-center gap-2">
                             <div class="relative flex-1">
@@ -132,8 +164,21 @@
             </div>
         </div>
 
+        <!-- Month Picker Modal (V3.7) -->
+        <div id="month-picker-modal" class="absolute inset-x-0 bottom-0 h-[50%] bg-white rounded-t-[30px] shadow-2xl transform translate-y-full flex flex-col">
+            <div class="px-6 pt-6 pb-2 flex justify-between items-center">
+                <span class="font-bold text-lg text-gray-700">選擇月份</span>
+                <button onclick="closeMonthPicker()" class="text-gray-400 p-2">取消</button>
+            </div>
+            <div class="p-4 flex-1 overflow-y-auto">
+                <div class="month-grid" id="month-grid-container">
+                    <!-- JS 生成月份按鈕 -->
+                </div>
+            </div>
+        </div>
+
         <!-- Data Modal -->
-        <div id="data-modal" class="absolute inset-x-0 bottom-0 h-[50%] bg-white rounded-t-[30px] shadow-2xl z-40 transform translate-y-full flex flex-col">
+        <div id="data-modal" class="absolute inset-x-0 bottom-0 h-[50%] bg-white rounded-t-[30px] shadow-2xl transform translate-y-full flex flex-col">
              <div class="px-6 pt-6 pb-2 flex justify-between items-center">
                 <span class="font-bold text-lg text-gray-700">資料備份/還原</span>
                 <button onclick="closeDataModal()" class="text-gray-400 p-2">關閉</button>
@@ -160,10 +205,12 @@
         let uploadedImageBase64 = null;
         let sourceMode = 'shop';
         let statsMonthOffset = 0;
+        // V3.7: 月曆改用偏移量控制，不再垂直滾動
+        let calendarMonthOffset = 0; 
         let editingId = null;
 
         const defaultData = {
-            meal: [{ id: 1, date: '2025-05-20', displayDate: '05/20 12:30', itemName: '招牌咖哩', shop: 'Mogu', address: '', price: 300, rating: 5, note: 'V3.5 更新：垂直月曆、餐食名稱欄位、咖啡新圖示！', img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&q=80', icon: '🍙' }],
+            meal: [{ id: 1, date: '2025-05-20', displayDate: '05/20 12:30', itemName: '招牌咖哩', shop: 'Mogu', address: '', price: 300, rating: 5, note: 'V3.7 更新：單月曆放大、點標題可跳轉年月！', img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&q=80', icon: '🍙' }],
             coffee: [],
             friends: [{ user: '小幫手', action: '提示', shop: '這裡', time: '剛剛', img: 'https://images.unsplash.com/photo-1552611052-33e04de081de', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Mogu' }]
         };
@@ -225,13 +272,19 @@
             }
         }
 
+        // 強制關閉所有 Modal
+        function closeAllModals() {
+            document.getElementById('add-modal').classList.add('translate-y-full');
+            document.getElementById('data-modal').classList.add('translate-y-full');
+            document.getElementById('month-picker-modal').classList.add('translate-y-full');
+        }
+
         function renderFeed() {
             const container = document.getElementById('feed-container');
             const viewToggle = document.getElementById('view-toggle-container');
             if(!container) return;
             container.innerHTML = '';
             
-            // V3.5 改名：餐食紀錄
             const titles = { meal: '餐食紀錄', coffee: '咖啡紀錄', friends: '好友動態', me: '我的帳務' };
             const colors = { meal: 'text-meal', coffee: 'text-coffee', friends: 'text-gray-700', me: 'text-gray-800' };
             document.getElementById('header-title').innerText = titles[currentTab];
@@ -258,7 +311,7 @@
             try {
                 if(currentTab === 'me') renderStats();
                 else if(currentTab === 'friends') renderFriends();
-                else if(viewMode === 'calendar') renderVerticalCalendar(); // V3.5 改用垂直月曆
+                else if(viewMode === 'calendar') renderCalendar(); // V3.7 回歸單月曆
                 else renderList();
             } catch (error) {
                 container.innerHTML = `<div class="p-4 text-center text-red-400 text-sm">載入錯誤，請嘗試重置。</div>`;
@@ -285,7 +338,6 @@
                     priceTag = `<div class="absolute bottom-2 right-2 bg-white/90 backdrop-blur px-2 py-1 rounded-lg text-xs font-bold text-gray-700">NT$ ${item.price}</div>`;
                 }
 
-                // V3.5 顯示邏輯：如果有品項名稱，顯示品項名稱(大)+店名(小)，否則只顯示店名(大)
                 let titleHtml = '';
                 if(item.itemName && item.itemName.trim() !== "") {
                     titleHtml = `
@@ -329,73 +381,113 @@
             else container.appendChild(fragment);
         }
 
-        // V3.5 垂直月曆渲染邏輯
-        function renderVerticalCalendar() {
+        // V3.7: 改回單月曆，並優化尺寸與導航
+        function renderCalendar() {
             const container = document.getElementById('feed-container');
             const items = appData[currentTab] || [];
-            
-            const wrapper = document.createElement('div');
-            wrapper.className = 'calendar-wrapper';
-
             const today = new Date();
-            // 渲染範圍：當前月 往前 6 個月 ~ 往後 6 個月 (共 13 個月)
-            const rangeStart = -6;
-            const rangeEnd = 6;
+            const year = today.getFullYear();
+            const month = today.getMonth() + calendarMonthOffset; // 使用偏移量計算
+            
+            const currentMonthDate = new Date(year, month, 1);
+            const displayYear = currentMonthDate.getFullYear();
+            const displayMonth = currentMonthDate.getMonth(); // 0-11
+            const daysInMonth = new Date(displayYear, displayMonth + 1, 0).getDate();
+            const firstDayIndex = new Date(displayYear, displayMonth, 1).getDay();
 
-            for (let i = rangeStart; i <= rangeEnd; i++) {
-                const targetDate = new Date(today.getFullYear(), today.getMonth() + i, 1);
-                const year = targetDate.getFullYear();
-                const month = targetDate.getMonth(); // 0-11
-                const daysInMonth = new Date(year, month + 1, 0).getDate();
-                const firstDayIndex = new Date(year, month, 1).getDay();
+            // 標題導航列：拆分年份和月份，可點擊
+            let navHtml = `
+            <div class="calendar-header">
+                <button onclick="changeMonth(-1)" class="p-2 bg-white rounded-full shadow-sm hover:bg-gray-50"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+                <div class="flex gap-2">
+                    <span onclick="openYearPicker(${displayYear})" class="calendar-title-btn text-gray-600">${displayYear}年</span>
+                    <span onclick="openMonthPicker(${displayMonth})" class="calendar-title-btn text-meal">${displayMonth + 1}月</span>
+                </div>
+                <button onclick="changeMonth(1)" class="p-2 bg-white rounded-full shadow-sm hover:bg-gray-50"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+            </div>`;
+            
+            // 星期標頭
+            const weekHeaderHtml = `
+            <div class="week-header">
+                <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
+            </div>`;
 
-                // 月份區塊
-                const monthBlock = document.createElement('div');
-                monthBlock.className = 'calendar-month-block';
-                // 給當前月份一個 ID 以便自動滾動
-                if (i === 0) monthBlock.id = 'current-month-scroll-anchor';
-
-                // 標題 (黏性)
-                const title = document.createElement('div');
-                title.className = 'calendar-month-title';
-                title.innerText = `${year}年 ${month + 1}月`;
-                monthBlock.appendChild(title);
-
-                // Grid
-                let gridHtml = `<div class="calendar-grid">`;
-                // 星期標頭 (每個月份都顯示比較清楚，或只在最上面顯示。這裡選擇每個月份不顯示星期，只在最上方顯示一次比較乾淨？不，垂直滑動還是每個開頭顯示比較好，或者省略。)
-                // 為了簡潔，我們只顯示日期格子。如果需要星期，可以在這裡加。
+            let gridHtml = `<div class="calendar-grid">`;
+            for(let i=0; i<firstDayIndex; i++) gridHtml += `<div class="calendar-day empty"></div>`;
+            
+            for(let d=1; d<=daysInMonth; d++) {
+                const checkDate = `${displayYear}-${String(displayMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                const dayItems = items.filter(item => item.date === checkDate);
+                const hasData = dayItems.length > 0;
+                const thumb = hasData ? dayItems[dayItems.length-1].img : '';
                 
-                // 補空白
-                for(let j=0; j<firstDayIndex; j++) gridHtml += `<div></div>`;
-                
-                for(let d=1; d<=daysInMonth; d++) {
-                    const checkDate = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                    const dayItems = items.filter(item => item.date === checkDate);
-                    const hasData = dayItems.length > 0;
-                    const thumb = hasData ? dayItems[dayItems.length-1].img : '';
-                    
-                    gridHtml += `
-                    <div class="calendar-day ${hasData ? 'has-data' : ''}" onclick="${hasData ? `alert('該日有 ${dayItems.length} 筆紀錄')` : ''}">
-                        ${hasData ? `<img src="${thumb}" loading="lazy" class="calendar-img">` : ''}
-                        <span class="${hasData ? 'text-white drop-shadow-md' : 'text-gray-300'}">${d}</span>
-                    </div>`;
-                }
-                gridHtml += `</div>`;
-                monthBlock.innerHTML += gridHtml;
-                wrapper.appendChild(monthBlock);
+                // V3.7: 如果有資料，邊框加色
+                const borderStyle = hasData ? (postType === 'meal' ? 'border-meal' : 'border-coffee') : '';
+
+                gridHtml += `
+                <div class="calendar-day ${hasData ? 'has-data' : ''} ${hasData ? borderStyle : ''}" onclick="${hasData ? `alert('該日有 ${dayItems.length} 筆紀錄')` : ''}">
+                    ${hasData ? `<img src="${thumb}" loading="lazy" class="calendar-img">` : ''}
+                    <span class="${hasData ? 'text-white drop-shadow-md' : 'text-gray-300'}">${d}</span>
+                </div>`;
             }
-
-            container.appendChild(wrapper);
-
-            // 自動滾動到當前月份
-            setTimeout(() => {
-                const anchor = document.getElementById('current-month-scroll-anchor');
-                if (anchor) {
-                    anchor.scrollIntoView({ behavior: 'auto', block: 'start' });
-                }
-            }, 100);
+            gridHtml += `</div>`;
+            
+            container.innerHTML = navHtml + weekHeaderHtml + gridHtml;
         }
+
+        // V3.7: 年份選擇 (簡單輸入框)
+        function openYearPicker(currentYear) {
+            const input = prompt("請輸入年份 (例如 2023):", currentYear);
+            if(input) {
+                const year = parseInt(input);
+                if(!isNaN(year) && year > 2000 && year < 2100) {
+                    // 計算偏移量：新目標年份 - 當前真實年份 * 12
+                    const today = new Date();
+                    const diffYears = year - today.getFullYear();
+                    // 保持當前顯示的月份，只改年份
+                    const currentDisplayMonth = (today.getMonth() + calendarMonthOffset) % 12; 
+                    // 重新設定 offset
+                    calendarMonthOffset = (diffYears * 12) + (currentDisplayMonth - today.getMonth());
+                    renderCalendar();
+                } else {
+                    alert("年份格式錯誤");
+                }
+            }
+        }
+
+        // V3.7: 月份選擇 (Modal)
+        function openMonthPicker(currentMonthIndex) {
+            const container = document.getElementById('month-grid-container');
+            container.innerHTML = '';
+            for(let i=0; i<12; i++) {
+                const btn = document.createElement('div');
+                btn.className = `month-btn ${i === currentMonthIndex ? 'bg-meal text-white' : ''}`;
+                btn.innerText = `${i+1}月`;
+                btn.onclick = () => selectMonth(i);
+                container.appendChild(btn);
+            }
+            document.getElementById('month-picker-modal').classList.remove('translate-y-full');
+        }
+
+        function selectMonth(targetMonthIndex) {
+            // 目標：保持當前顯示的年份，只換月份
+            const today = new Date();
+            const currentDisplayDate = new Date(today.getFullYear(), today.getMonth() + calendarMonthOffset, 1);
+            const currentDisplayYear = currentDisplayDate.getFullYear();
+            
+            // 計算新的 offset
+            // 目標日期 = (目標年, 目標月)
+            const diffMonths = (currentDisplayYear - today.getFullYear()) * 12 + (targetMonthIndex - today.getMonth());
+            calendarMonthOffset = diffMonths;
+            
+            renderCalendar();
+            closeMonthPicker();
+        }
+
+        function closeMonthPicker() {
+            document.getElementById('month-picker-modal').classList.add('translate-y-full');
+        }
+
 
         function renderStats() {
             const container = document.getElementById('feed-container');
@@ -460,12 +552,28 @@
             </div>`;
         }
 
-        function switchTab(t) { currentTab = t; viewMode = 'list'; renderFeed(); }
-        function setViewMode(mode) { viewMode = mode; renderFeed(); }
-        // V3.5 垂直滾動不需要 changeMonth 了，但為了不報錯保留空函數或未來擴充用
+        function switchTab(t) { 
+            closeAllModals();
+            currentTab = t; 
+            viewMode = 'list'; 
+            renderFeed(); 
+        }
+        
+        function setViewMode(mode) { 
+            closeAllModals();
+            viewMode = mode; 
+            renderFeed(); 
+        }
+        
+        function changeMonth(offset) { 
+            calendarMonthOffset += offset; 
+            renderCalendar(); 
+        }
+        
         function changeStatsMonth(offset) { statsMonthOffset += offset; renderFeed(); }
 
         function openModal() { 
+            closeAllModals();
             document.getElementById('add-modal').classList.remove('translate-y-full'); 
             setPostType(currentTab === 'coffee' ? 'coffee' : 'meal'); 
             resetForm(); 
@@ -483,7 +591,6 @@
             editingId = id; 
             setPostType(currentTab); 
 
-            // V3.5 回填資料：新增品項
             document.getElementById('input-item').value = item.itemName || '';
             document.getElementById('input-shop').value = item.shop;
             document.getElementById('input-address').value = item.address;
@@ -509,6 +616,8 @@
 
             document.getElementById('modal-title').innerText = "編輯紀錄";
             document.getElementById('save-btn').innerText = "更新";
+            
+            closeAllModals();
             document.getElementById('add-modal').classList.remove('translate-y-full'); 
         }
 
@@ -522,7 +631,6 @@
         }
         function renderRatingInput() {
             const container = document.getElementById('rating-container');
-            // V3.5 咖啡 Emoji 更新為 ☕️
             const icon = postType === 'meal' ? '🍙' : '☕️';
             container.innerHTML = '';
             for(let i=1; i<=5; i++) container.innerHTML += `<span onclick="setRating(${i})" class="${i<=currentRating ? '' : 'opacity-30'} cursor-pointer hover:scale-110 transition">${icon}</span>`;
@@ -559,7 +667,6 @@
         }
         function resetForm() {
             editingId = null; 
-            // V3.5 清空品項欄位
             document.getElementById('input-item').value = '';
             document.getElementById('input-shop').value = '';
             document.getElementById('input-address').value = '';
@@ -585,7 +692,6 @@
             btn.innerText = '儲存中...';
             btn.disabled = true;
 
-            // V3.5 讀取品項名稱
             const itemName = document.getElementById('input-item').value || '';
             const shop = document.getElementById('input-shop').value || '未命名';
             const address = document.getElementById('input-address').value || '';
@@ -599,7 +705,6 @@
 
             if (!appData[postType]) appData[postType] = [];
 
-            // V3.5 咖啡 Emoji
             const iconChar = postType === 'meal' ? '🍙' : '☕️';
 
             if (editingId) {
@@ -610,7 +715,7 @@
                         date: dateKey,
                         fullDate: dateObj.toISOString(),
                         displayDate: displayDate,
-                        itemName: itemName, // 存入品項
+                        itemName: itemName, 
                         shop: shop,
                         address: address,
                         price: price,
@@ -626,7 +731,7 @@
                     date: dateKey,       
                     fullDate: dateObj.toISOString(), 
                     displayDate: displayDate, 
-                    itemName: itemName, // 存入品項
+                    itemName: itemName, 
                     shop: shop,
                     address: address,
                     price: price,
