@@ -5,63 +5,64 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Mogu v3.1</title>
+    <title>Mogu v2.1</title>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
-        /* 基礎設定 */
-        body { font-family: 'Zen Maru Gothic', 'Nunito', sans-serif; background-color: #F2F2F2; display: flex; justify-content: center; height: 100vh; margin: 0; color: #4A4A4A; user-select: none; -webkit-tap-highlight-color: transparent; overflow: hidden; }
-        #app-container { width: 100%; max-width: 440px; height: 100%; background-color: #FDFBF7; position: relative; display: flex; flex-direction: column; }
+        body { font-family: 'Zen Maru Gothic', 'Nunito', sans-serif; background-color: #F2F2F2; display: flex; justify-content: center; min-height: 100vh; margin: 0; color: #4A4A4A; user-select: none; -webkit-tap-highlight-color: transparent; }
+        #app-container { width: 100%; max-width: 420px; height: 100dvh; background-color: #FDFBF7; position: relative; overflow: hidden; display: flex; flex-direction: column; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .glass-nav { background: rgba(253, 251, 247, 0.95); backdrop-filter: blur(10px); border-top: 1px solid rgba(0,0,0,0.05); padding-bottom: env(safe-area-inset-bottom, 20px); }
+        .glass-nav { background: rgba(253, 251, 247, 0.95); backdrop-filter: blur(10px); border-top: 1px solid rgba(0,0,0,0.05); }
         .card { background: #FFFFFF; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: transform 0.2s ease; }
         .bouncy:active { transform: scale(0.9); }
-        #add-modal { transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); padding-bottom: env(safe-area-inset-bottom, 20px); }
+        #add-modal { transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
         .text-meal { color: #8DA399; } .bg-meal { background-color: #8DA399; }
         .text-coffee { color: #B09B82; } .bg-coffee { background-color: #B09B82; }
-        .calendar-container { display: flex; flex-direction: column; height: 100%; padding-bottom: 80px; }
-        .calendar-header { padding: 10px 20px; flex-shrink: 0; }
-        .calendar-grid-wrapper { flex: 1; display: flex; flex-direction: column; padding: 0 10px 10px 10px; }
-        .calendar-week-row { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 12px; color: #999; padding-bottom: 5px; flex-shrink: 0; }
-        .calendar-days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; flex: 1; grid-auto-rows: 1fr; } 
-        .calendar-day { border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; font-size: 12px; padding-top: 4px; position: relative; background: #fcfcfc; overflow: hidden; height: 100%; border: 1px solid transparent; }
+        #preview-img { width: 100%; height: 100%; object-fit: cover; border-radius: 16px; display: none; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; padding: 10px; }
+        .calendar-day { aspect-ratio: 1; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; font-size: 12px; padding-top: 4px; position: relative; background: #fcfcfc; }
         .calendar-day.has-data { background: #fff; border: 1px solid #eee; cursor: pointer; }
-        .calendar-day.today { background-color: #F0F0F0; font-weight: bold; }
-        .calendar-img { width: 90%; height: 70%; object-fit: cover; border-radius: 6px; margin-top: 2px; flex-grow: 1; margin-bottom: 4px; }
+        .calendar-img { width: 80%; height: 80%; object-fit: cover; border-radius: 6px; margin-top: 2px; }
         .view-toggle { background: #eee; border-radius: 20px; padding: 3px; display: flex; width: fit-content; margin: 0 auto; }
         .view-btn { padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: bold; color: #888; transition: all 0.2s; }
         .view-btn.active { background: #fff; shadow: 0 2px 4px rgba(0,0,0,0.1); color: #444; }
-        input[type="datetime-local"] { -webkit-appearance: none; background: transparent; font-family: inherit; color: #555; }
-        .swipe-hint { animation: swipeAnim 2s infinite; opacity: 0.5; }
-        @keyframes swipeAnim { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(5px); } }
     </style>
 </head>
 <body>
+
     <div id="app-container">
-        <div class="pt-12 pb-2 px-6 bg-transparent z-10 flex-shrink-0">
+        <!-- Header -->
+        <div class="pt-14 pb-2 px-6 bg-transparent z-10">
             <div class="flex justify-between items-center mb-2">
                 <h1 class="text-2xl font-bold tracking-widest text-gray-700" id="header-title">食記</h1>
-                <div id="view-toggle-container" class="view-toggle hidden">
-                    <button onclick="setViewMode('list')" id="btn-view-list" class="view-btn active">列表</button>
-                    <button onclick="setViewMode('calendar')" id="btn-view-calendar" class="view-btn">月曆</button>
+                <div class="flex gap-3">
+                    <!-- 重置按鈕移到設定區，避免誤觸 -->
                 </div>
+            </div>
+            
+            <div id="view-toggle-container" class="view-toggle hidden">
+                <button onclick="setViewMode('list')" id="btn-view-list" class="view-btn active">列表</button>
+                <button onclick="setViewMode('calendar')" id="btn-view-calendar" class="view-btn">月曆</button>
             </div>
         </div>
 
-        <div class="flex-1 overflow-y-auto no-scrollbar relative" id="feed-container"></div>
+        <!-- Content -->
+        <div class="flex-1 overflow-y-auto no-scrollbar px-4 pb-28" id="feed-container"></div>
 
-        <div class="glass-nav absolute bottom-0 w-full flex justify-between items-end z-20 px-6 pt-2">
-            <button onclick="switchTab('meal')" class="flex flex-col items-center gap-1 bouncy w-12 pb-2"><i data-lucide="utensils" id="icon-meal" class="w-6 h-6"></i><span class="text-[10px] font-bold" id="text-meal">三餐</span></button>
-            <button onclick="switchTab('coffee')" class="flex flex-col items-center gap-1 bouncy w-12 pb-2"><i data-lucide="coffee" id="icon-coffee" class="w-6 h-6"></i><span class="text-[10px] font-bold" id="text-coffee">咖啡</span></button>
-            <button onclick="openModal()" class="bouncy mb-6 bg-gray-800 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg"><i data-lucide="plus" class="w-7 h-7"></i></button>
-            <button onclick="switchTab('friends')" class="flex flex-col items-center gap-1 bouncy w-12 pb-2"><i data-lucide="users" id="icon-friends" class="w-6 h-6"></i><span class="text-[10px] font-bold" id="text-friends">好友</span></button>
-            <button onclick="switchTab('me')" class="flex flex-col items-center gap-1 bouncy w-12 pb-2"><i data-lucide="user" id="icon-me" class="w-6 h-6"></i><span class="text-[10px] font-bold" id="text-me">我的</span></button>
+        <!-- Tab Bar -->
+        <div class="glass-nav absolute bottom-0 w-full pb-8 pt-3 px-6 flex justify-between items-end z-20">
+            <button onclick="switchTab('meal')" class="flex flex-col items-center gap-1 bouncy w-12"><i data-lucide="utensils" id="icon-meal" class="w-6 h-6"></i><span class="text-[10px] font-bold" id="text-meal">三餐</span></button>
+            <button onclick="switchTab('coffee')" class="flex flex-col items-center gap-1 bouncy w-12"><i data-lucide="coffee" id="icon-coffee" class="w-6 h-6"></i><span class="text-[10px] font-bold" id="text-coffee">咖啡</span></button>
+            <button onclick="openModal()" class="bouncy mb-4 -mt-8 bg-gray-800 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg"><i data-lucide="plus" class="w-7 h-7"></i></button>
+            <button onclick="switchTab('friends')" class="flex flex-col items-center gap-1 bouncy w-12"><i data-lucide="users" id="icon-friends" class="w-6 h-6"></i><span class="text-[10px] font-bold" id="text-friends">好友</span></button>
+            <button onclick="switchTab('me')" class="flex flex-col items-center gap-1 bouncy w-12"><i data-lucide="user" id="icon-me" class="w-6 h-6"></i><span class="text-[10px] font-bold" id="text-me">我的</span></button>
         </div>
 
-        <div id="add-modal" class="absolute inset-x-0 bottom-0 h-[96%] bg-white rounded-t-[30px] shadow-2xl z-30 transform translate-y-full flex flex-col">
-            <div class="px-6 pt-6 pb-2 flex justify-between items-center flex-shrink-0">
+        <!-- Add Modal -->
+        <div id="add-modal" class="absolute inset-x-0 bottom-0 h-[95%] bg-white rounded-t-[30px] shadow-2xl z-30 transform translate-y-full flex flex-col">
+            <div class="px-6 pt-6 pb-2 flex justify-between items-center">
                 <button onclick="closeModal()" class="text-gray-400 p-2">取消</button>
                 <span class="font-bold text-lg text-gray-700">紀錄一下</span>
                 <button onclick="savePost()" class="font-bold text-meal p-2" id="save-btn">發佈</button>
@@ -76,21 +77,13 @@
                     </div>
                 </div>
 
-                <div class="flex gap-4 mb-6 h-32">
-                    <div class="relative w-32 h-32 flex-shrink-0 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center overflow-hidden">
-                        <input type="file" id="file-input" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 z-20 cursor-pointer" onchange="handleImageUpload(this)">
-                        <div id="upload-placeholder" class="flex flex-col items-center text-gray-400">
-                            <i data-lucide="camera" class="w-6 h-6 mb-1"></i>
-                            <span class="text-[10px] font-medium">照片</span>
-                        </div>
-                        <img id="preview-img" src="" class="absolute inset-0 w-full h-full object-cover hidden z-10">
+                <div class="relative w-full aspect-[4/3] bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center mb-6 overflow-hidden">
+                    <input type="file" id="file-input" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 z-20 cursor-pointer" onchange="handleImageUpload(this)">
+                    <div id="upload-placeholder" class="flex flex-col items-center text-gray-400">
+                        <i data-lucide="camera" class="w-8 h-8 mb-2"></i>
+                        <span class="text-xs font-medium">點擊拍攝</span>
                     </div>
-                    <div class="flex-1 flex flex-col justify-center">
-                        <label class="text-xs text-gray-400 font-bold mb-1 block">日期與時間</label>
-                        <div class="bg-gray-50 rounded-xl p-3 flex items-center">
-                            <input type="datetime-local" id="input-date" class="w-full bg-transparent text-sm outline-none font-bold text-gray-600">
-                        </div>
-                    </div>
+                    <img id="preview-img" src="" class="absolute inset-0 z-10">
                 </div>
 
                 <div class="space-y-4">
@@ -98,24 +91,30 @@
                         <button onclick="toggleSource('shop')" id="btn-shop" class="flex-1 py-2 rounded-full bg-gray-800 text-white text-xs font-bold">店家</button>
                         <button onclick="toggleSource('home')" id="btn-home" class="flex-1 py-2 rounded-full bg-gray-100 text-gray-400 text-xs font-bold">自己做</button>
                     </div>
+
                     <div id="shop-section">
-                        <div class="flex items-center gap-2 mb-3">
+                        <input type="text" id="input-shop" placeholder="店名..." class="w-full p-3 bg-gray-50 rounded-xl text-sm outline-none mb-2 focus:bg-white focus:ring-2 focus:ring-gray-100">
+                        <div class="flex items-center gap-2">
                             <div class="relative flex-1">
                                 <i data-lucide="map-pin" class="absolute left-3 top-3.5 w-4 h-4 text-gray-400"></i>
-                                <input type="text" id="input-address" placeholder="點右側定位或手動輸入地址" class="w-full p-3 pl-9 bg-gray-50 rounded-xl text-xs outline-none focus:bg-white focus:ring-2 focus:ring-gray-100 text-gray-600">
+                                <input type="text" id="input-address" placeholder="輸入地址 或 點右側定位" class="w-full p-3 pl-9 bg-gray-50 rounded-xl text-xs outline-none focus:bg-white focus:ring-2 focus:ring-gray-100">
                             </div>
-                            <button onclick="getCurrentLocation()" class="bg-gray-100 p-3 rounded-xl text-gray-500 hover:bg-gray-200 transition flex-shrink-0 w-12 flex justify-center"><i data-lucide="crosshair" class="w-4 h-4" id="loc-icon"></i></button>
+                            <button onclick="getCurrentLocation()" class="bg-gray-100 p-3 rounded-xl text-gray-500 hover:bg-gray-200 transition">
+                                <i data-lucide="crosshair" class="w-4 h-4"></i>
+                            </button>
                         </div>
-                        <input type="text" id="input-shop" placeholder="輸入店名 (例如: 星巴克)" class="w-full p-3 bg-gray-50 rounded-xl text-sm outline-none mb-2 focus:bg-white focus:ring-2 focus:ring-gray-100 font-bold">
                     </div>
+                    
                     <div class="relative">
                         <span class="absolute left-4 top-3.5 text-gray-400 text-sm">$</span>
                         <input type="number" id="input-price" placeholder="價格" class="w-full p-3 pl-8 bg-gray-50 rounded-xl text-sm outline-none focus:bg-white focus:ring-2 focus:ring-gray-100">
                     </div>
+
                     <div class="bg-gray-50 rounded-xl p-3 flex justify-between items-center">
                         <span class="text-sm font-bold text-gray-500">喜好</span>
                         <div class="flex gap-2 text-2xl select-none" id="rating-container"></div>
                     </div>
+
                     <textarea id="input-note" placeholder="寫點心得..." class="w-full p-3 bg-gray-50 rounded-xl text-sm outline-none h-20 resize-none focus:bg-white focus:ring-2 focus:ring-gray-100"></textarea>
                 </div>
             </div>
@@ -124,33 +123,360 @@
 
     <script>
         lucide.createIcons();
+        
         let currentTab = 'meal';
         let postType = 'meal';
         let viewMode = 'list';
         let currentRating = 3;
         let uploadedImageBase64 = null;
         let sourceMode = 'shop';
-        let calendarDate = new Date();
-        let statsDate = new Date();
+        let calendarMonthOffset = 0;
 
         const defaultData = {
-            meal: [{ id: 1, date: '2025-05-20T12:30', shop: 'Mogu Diner', address: '台北市信義區', price: 300, rating: 5, note: '範例：點擊定位按鈕可以自動抓取地址！', img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&q=80', icon: '🍙' }],
+            meal: [{ id: 1, date: '2025-05-20', displayDate: '5/20 12:30', shop: 'Mogu Diner', address: '台北市信義區', price: 300, rating: 5, note: '範例：點擊地址可跳轉地圖', img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&q=80', icon: '🍙' }],
             coffee: [],
             friends: [{ user: '小幫手', action: '提示', shop: '這裡', time: '剛剛', img: 'https://images.unsplash.com/photo-1552611052-33e04de081de', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Mogu' }]
         };
 
-        // 核心：讀取與資料遷移 (Migration V2 -> V3)
         function loadData() {
-            // 1. 先試著讀取 V3 (新版)
-            const storedV3 = localStorage.getItem('moguData_v3');
-            if (storedV3) {
-                return JSON.parse(storedV3);
+            const stored = localStorage.getItem('moguData_v2');
+            return stored ? JSON.parse(stored) : defaultData;
+        }
+        function saveData(newData) { localStorage.setItem('moguData_v2', JSON.stringify(newData)); }
+
+        let appData = loadData();
+
+        function renderFeed() {
+            const container = document.getElementById('feed-container');
+            const viewToggle = document.getElementById('view-toggle-container');
+            container.innerHTML = '';
+            
+            const titles = { meal: '本日食記', coffee: '咖啡紀錄', friends: '好友動態', me: '我的帳務' };
+            const colors = { meal: 'text-meal', coffee: 'text-coffee', friends: 'text-gray-700', me: 'text-gray-800' };
+            document.getElementById('header-title').innerText = titles[currentTab];
+            document.getElementById('header-title').className = `text-2xl font-bold tracking-widest ${colors[currentTab]}`;
+
+            ['meal', 'coffee', 'friends', 'me'].forEach(t => {
+                const icon = document.getElementById(`icon-${t}`);
+                const text = document.getElementById(`text-${t}`);
+                const isActive = t === currentTab;
+                const activeColor = t === 'meal' ? 'text-meal' : (t === 'coffee' ? 'text-coffee' : 'text-gray-800');
+                icon.className = `w-6 h-6 transition-colors ${isActive ? activeColor : 'text-gray-300'}`;
+                text.className = `text-[10px] font-bold transition-colors ${isActive ? activeColor : 'text-gray-300'}`;
+            });
+
+            if(currentTab === 'meal' || currentTab === 'coffee') {
+                viewToggle.classList.remove('hidden');
+                document.getElementById('btn-view-list').className = `view-btn ${viewMode === 'list' ? 'active' : ''}`;
+                document.getElementById('btn-view-calendar').className = `view-btn ${viewMode === 'calendar' ? 'active' : ''}`;
+            } else {
+                viewToggle.classList.add('hidden');
             }
 
-            // 2. 如果 V3 是空的，檢查有沒有 V2 (舊版)
-            const storedV2 = localStorage.getItem('moguData_v2');
-            if (storedV2) {
-                console.log("發現舊版資料，正在遷移...");
-                const oldData = JSON.parse(storedV2);
-                
-                // 轉換格式：舊版的 date 可能
+            if(currentTab === 'me') renderStats();
+            else if(currentTab === 'friends') renderFriends();
+            else if(viewMode === 'calendar') renderCalendar();
+            else renderList();
+            
+            lucide.createIcons();
+        }
+
+        function renderList() {
+            const container = document.getElementById('feed-container');
+            const items = appData[currentTab] || [];
+            [...items].reverse().forEach(item => {
+                let stars = '';
+                for(let i=0; i<5; i++) stars += `<span class="${i < item.rating ? '' : 'opacity-20 grayscale'} text-sm mr-0.5">${item.icon}</span>`;
+                let mapLink = '';
+                if(item.address && item.address.length > 0) {
+                    mapLink = `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.address)}" target="_blank" class="text-xs text-blue-500 flex items-center mt-1 hover:underline"><i data-lucide="map-pin" class="w-3 h-3 mr-1"></i> ${item.address}</a>`;
+                }
+                container.innerHTML += `
+                <div class="card p-0 mb-6 overflow-hidden group">
+                    <div class="w-full h-56 bg-gray-100 relative">
+                        <img src="${item.img}" class="w-full h-full object-cover">
+                        ${item.price ? `<div class="absolute bottom-2 right-2 bg-white/90 backdrop-blur px-2 py-1 rounded-lg text-xs font-bold text-gray-700">NT$ ${item.price}</div>` : ''}
+                        <button onclick="deleteItem(${item.id})" class="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex justify-between items-start mb-1">
+                            <h3 class="font-bold text-gray-800 text-lg">${item.shop}</h3>
+                            <div class="flex">${stars}</div>
+                        </div>
+                        ${mapLink}
+                        <p class="text-xs text-gray-400 mt-2 flex items-center"><i data-lucide="clock" class="w-3 h-3 mr-1"></i> ${item.displayDate}</p>
+                        <p class="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap mt-2">${item.note}</p>
+                    </div>
+                </div>`;
+            });
+            if(items.length === 0) container.innerHTML = `<div class="text-center mt-20 text-gray-300 text-sm">目前沒有紀錄</div>`;
+        }
+
+        function renderCalendar() {
+            const container = document.getElementById('feed-container');
+            const items = appData[currentTab] || [];
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = today.getMonth() + calendarMonthOffset;
+            const currentMonthDate = new Date(year, month, 1);
+            const displayYear = currentMonthDate.getFullYear();
+            const displayMonth = currentMonthDate.getMonth();
+            const daysInMonth = new Date(displayYear, displayMonth + 1, 0).getDate();
+            const firstDayIndex = currentMonthDate.getDay();
+
+            let navHtml = `
+            <div class="flex justify-between items-center px-4 mb-4">
+                <button onclick="changeMonth(-1)" class="p-2 bg-white rounded-full shadow-sm"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+                <span class="font-bold text-lg text-gray-600">${displayYear}年 ${displayMonth + 1}月</span>
+                <button onclick="changeMonth(1)" class="p-2 bg-white rounded-full shadow-sm"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+            </div>`;
+            let gridHtml = `<div class="calendar-grid">`;
+            const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
+            weekDays.forEach(d => gridHtml += `<div class="text-center text-xs text-gray-400 py-2">${d}</div>`);
+            for(let i=0; i<firstDayIndex; i++) gridHtml += `<div></div>`;
+            for(let d=1; d<=daysInMonth; d++) {
+                const checkDate = `${displayYear}-${String(displayMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                const dayItems = items.filter(i => i.date === checkDate);
+                const hasData = dayItems.length > 0;
+                const thumb = hasData ? dayItems[dayItems.length-1].img : '';
+                gridHtml += `
+                <div class="calendar-day ${hasData ? 'has-data' : ''}">
+                    <span class="${hasData ? 'font-bold text-gray-800' : 'text-gray-300'}">${d}</span>
+                    ${hasData ? `<img src="${thumb}" class="calendar-img">` : ''}
+                </div>`;
+            }
+            gridHtml += `</div>`;
+            container.innerHTML = navHtml + gridHtml;
+        }
+
+        function renderStats() {
+            const container = document.getElementById('feed-container');
+            const now = new Date();
+            const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+            const filterByMonth = (list) => list.filter(i => i.date.startsWith(currentMonthStr));
+            const mealMonthly = filterByMonth(appData.meal);
+            const coffeeMonthly = filterByMonth(appData.coffee);
+            const mealTotal = mealMonthly.reduce((sum, item) => sum + Number(item.price), 0);
+            const coffeeTotal = coffeeMonthly.reduce((sum, item) => sum + Number(item.price), 0);
+            const grandTotal = mealTotal + coffeeTotal;
+
+            container.innerHTML = `
+            <div class="px-2">
+                <div class="text-center mb-6 mt-4">
+                    <p class="text-sm text-gray-400 mb-1">${now.getMonth()+1}月 總支出</p>
+                    <h2 class="text-4xl font-bold text-gray-800">NT$ ${grandTotal.toLocaleString()}</h2>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="bg-white p-5 rounded-2xl shadow-sm flex flex-col items-center relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-1 h-full bg-meal"></div>
+                        <i data-lucide="utensils" class="w-6 h-6 text-meal mb-2"></i>
+                        <span class="text-xs text-gray-400">三餐花費</span>
+                        <span class="text-xl font-bold text-gray-700 mt-1">$${mealTotal.toLocaleString()}</span>
+                        <span class="text-[10px] text-gray-300 mt-1">${mealMonthly.length} 筆紀錄</span>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm flex flex-col items-center relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-1 h-full bg-coffee"></div>
+                        <i data-lucide="coffee" class="w-6 h-6 text-coffee mb-2"></i>
+                        <span class="text-xs text-gray-400">咖啡花費</span>
+                        <span class="text-xl font-bold text-gray-700 mt-1">$${coffeeTotal.toLocaleString()}</span>
+                        <span class="text-[10px] text-gray-300 mt-1">${coffeeMonthly.length} 筆紀錄</span>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm mb-6">
+                    <h3 class="font-bold text-gray-600 mb-4 text-sm">支出佔比</h3>
+                    <div class="w-full h-4 bg-gray-100 rounded-full overflow-hidden flex">
+                        <div style="width: ${(mealTotal/grandTotal)*100 || 0}%" class="h-full bg-meal"></div>
+                        <div style="width: ${(coffeeTotal/grandTotal)*100 || 0}%" class="h-full bg-coffee"></div>
+                    </div>
+                </div>
+
+                <!-- 備份還原區 -->
+                <div class="bg-white p-4 rounded-2xl shadow-sm mb-8">
+                    <h3 class="font-bold text-gray-600 mb-3 text-sm">資料管理 (備份/轉移)</h3>
+                    <div class="flex gap-3">
+                        <button onclick="exportData()" class="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-gray-200">
+                            <i data-lucide="download" class="w-4 h-4"></i> 匯出代碼
+                        </button>
+                        <button onclick="importData()" class="flex-1 bg-gray-800 text-white py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-gray-700">
+                            <i data-lucide="upload" class="w-4 h-4"></i> 匯入代碼
+                        </button>
+                    </div>
+                    <button onclick="clearData()" class="w-full mt-3 text-red-400 text-xs py-2">清空所有資料 (重置)</button>
+                </div>
+            </div>`;
+        }
+
+        function renderFriends() {
+            const container = document.getElementById('feed-container');
+            container.innerHTML = `<div class="p-4 bg-gray-100 rounded-xl text-center text-xs text-gray-400 mb-4">好友功能需連網</div>`;
+            appData.friends.forEach(item => {
+                container.innerHTML += `
+                <div class="card p-4 mb-4 flex gap-4">
+                    <div class="w-10 h-10 rounded-full bg-gray-100 overflow-hidden"><img src="${item.avatar}" class="w-full h-full object-cover"></div>
+                    <div class="flex-1">
+                        <div class="flex justify-between items-start mb-2">
+                            <div><span class="font-bold text-sm text-gray-800">${item.user}</span><span class="text-xs text-gray-500 ml-2">${item.action} @ ${item.shop}</span></div>
+                            <span class="text-[10px] text-gray-400">${item.time}</span>
+                        </div>
+                        <div class="h-32 rounded-xl overflow-hidden bg-gray-100"><img src="${item.img}" class="w-full h-full object-cover"></div>
+                    </div>
+                </div>`;
+            });
+        }
+
+        function switchTab(t) { currentTab = t; viewMode = 'list'; renderFeed(); }
+        function setViewMode(mode) { viewMode = mode; renderFeed(); }
+        function changeMonth(offset) { calendarMonthOffset += offset; renderCalendar(); }
+        function openModal() { document.getElementById('add-modal').classList.remove('translate-y-full'); setPostType(currentTab === 'coffee' ? 'coffee' : 'meal'); resetForm(); }
+        function closeModal() { document.getElementById('add-modal').classList.add('translate-y-full'); }
+        
+        function setPostType(type) {
+            postType = type;
+            document.getElementById('segment-overlay').style.transform = type === 'meal' ? 'translateX(0)' : 'translateX(100%)';
+            document.getElementById('save-btn').className = `font-bold p-2 ${type === 'meal' ? 'text-meal' : 'text-coffee'}`;
+            renderRatingInput();
+        }
+
+        function renderRatingInput() {
+            const container = document.getElementById('rating-container');
+            const icon = postType === 'meal' ? '🍙' : '🫘';
+            container.innerHTML = '';
+            for(let i=1; i<=5; i++) container.innerHTML += `<span onclick="setRating(${i})" class="${i<=currentRating ? '' : 'opacity-30'} cursor-pointer hover:scale-110 transition">${icon}</span>`;
+        }
+        function setRating(r) { currentRating = r; renderRatingInput(); }
+
+        function toggleSource(mode) {
+            sourceMode = mode;
+            if(mode === 'home') {
+                document.getElementById('btn-home').className = 'flex-1 py-2 rounded-full bg-gray-800 text-white text-xs font-bold transition';
+                document.getElementById('btn-shop').className = 'flex-1 py-2 rounded-full bg-gray-100 text-gray-400 text-xs font-bold transition';
+                document.getElementById('input-shop').value = '自己做';
+                document.getElementById('input-address').parentElement.parentElement.style.display = 'none';
+            } else {
+                document.getElementById('btn-shop').className = 'flex-1 py-2 rounded-full bg-gray-800 text-white text-xs font-bold transition';
+                document.getElementById('btn-home').className = 'flex-1 py-2 rounded-full bg-gray-100 text-gray-400 text-xs font-bold transition';
+                document.getElementById('input-shop').value = '';
+                document.getElementById('input-address').parentElement.parentElement.style.display = 'flex';
+            }
+        }
+
+        function getCurrentLocation() {
+            const btn = event.currentTarget;
+            if(!navigator.geolocation) { alert('不支援定位'); return; }
+            btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>';
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    document.getElementById('input-address').value = `${position.coords.latitude}, ${position.coords.longitude}`;
+                    btn.innerHTML = '<i data-lucide="check" class="w-4 h-4 text-green-600"></i>';
+                },
+                () => { alert('無法定位'); btn.innerHTML = '<i data-lucide="crosshair" class="w-4 h-4"></i>'; }
+            );
+        }
+
+        function handleImageUpload(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    uploadedImageBase64 = e.target.result;
+                    document.getElementById('preview-img').src = e.target.result;
+                    document.getElementById('preview-img').style.display = 'block';
+                    document.getElementById('upload-placeholder').style.display = 'none';
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('input-shop').value = '';
+            document.getElementById('input-address').value = '';
+            document.getElementById('input-price').value = '';
+            document.getElementById('input-note').value = '';
+            document.getElementById('file-input').value = '';
+            document.getElementById('preview-img').style.display = 'none';
+            document.getElementById('upload-placeholder').style.display = 'flex';
+            uploadedImageBase64 = null;
+            currentRating = 3;
+            toggleSource('shop');
+            renderRatingInput();
+        }
+
+        function savePost() {
+            const shop = document.getElementById('input-shop').value || '未命名';
+            const address = document.getElementById('input-address').value || '';
+            const price = document.getElementById('input-price').value;
+            const note = document.getElementById('input-note').value;
+            const img = uploadedImageBase64 || 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=500&q=80';
+            const now = new Date();
+            const dateKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+            const displayDate = `${now.getMonth()+1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+
+            appData[postType].push({
+                id: Date.now(),
+                date: dateKey,
+                displayDate: displayDate,
+                shop: shop,
+                address: address,
+                price: price,
+                rating: currentRating,
+                note: note,
+                img: img,
+                icon: postType === 'meal' ? '🍙' : '🫘'
+            });
+            saveData(appData);
+            closeModal();
+            if(currentTab !== 'friends' && currentTab !== 'me') switchTab(postType);
+            else renderFeed();
+        }
+
+        function deleteItem(id) {
+            if(confirm('刪除紀錄？')) {
+                appData[currentTab] = appData[currentTab].filter(i => i.id !== id);
+                saveData(appData);
+                renderFeed();
+            }
+        }
+
+        function clearData() {
+            if(confirm('警告：這將刪除所有紀錄！建議先匯出備份。確定嗎？')) {
+                localStorage.removeItem('moguData_v2');
+                location.reload();
+            }
+        }
+
+        // 備份功能
+        function exportData() {
+            const json = localStorage.getItem('moguData_v2');
+            if(!json) { alert('目前沒有資料可備份'); return; }
+            
+            // 複製到剪貼簿 (適合手機)
+            navigator.clipboard.writeText(json).then(() => {
+                alert('資料代碼已複製到剪貼簿！\n\n請將它貼到備忘錄或 LINE 存起來。');
+            }).catch(err => {
+                console.error('複製失敗', err);
+                prompt('請手動全選複製以下代碼：', json);
+            });
+        }
+
+        // 還原功能
+        function importData() {
+            const input = prompt('請貼上之前備份的資料代碼：');
+            if (input) {
+                try {
+                    const parsed = JSON.parse(input);
+                    if(parsed.meal && parsed.coffee) {
+                        saveData(parsed);
+                        alert('資料還原成功！');
+                        location.reload();
+                    } else {
+                        alert('資料格式錯誤');
+                    }
+                } catch (e) {
+                    alert('代碼無效，請確認是否完整複製。');
+                }
+            }
+        }
+
+        renderFeed();
+    </script>
+</body>
+</html>
