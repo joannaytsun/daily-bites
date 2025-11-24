@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Mogu V3.4</title>
+    <title>Mogu V3.5</title>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -21,11 +21,17 @@
         .text-meal { color: #8DA399; } .bg-meal { background-color: #8DA399; }
         .text-coffee { color: #B09B82; } .bg-coffee { background-color: #B09B82; }
         #preview-img { width: 100%; height: 100%; object-fit: cover; border-radius: 16px; display: none; }
+        
+        /* V3.5 月曆樣式調整：垂直滾動 */
+        .calendar-wrapper { padding-bottom: 40px; }
+        .calendar-month-block { margin-bottom: 24px; }
+        .calendar-month-title { font-weight: bold; font-size: 18px; color: #666; padding: 0 16px 12px 16px; position: sticky; top: 0; background: #FDFBF7; z-index: 5; display: flex; align-items: center; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; padding: 0 16px; width: 100%; box-sizing: border-box; }
         .calendar-day { aspect-ratio: 1; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; font-size: 12px; padding-top: 4px; position: relative; background: #fcfcfc; overflow: hidden; }
         .calendar-day.has-data { background: #fff; border: 1px solid #eee; cursor: pointer; }
         .calendar-img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; opacity: 0.8; z-index: 0; }
         .calendar-day span { z-index: 10; font-weight: bold; text-shadow: 0 1px 2px rgba(255,255,255,0.8); }
+        
         .view-toggle { background: #eee; border-radius: 20px; padding: 3px; display: flex; width: fit-content; margin: 0 auto; }
         .view-btn { padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: bold; color: #888; transition: all 0.2s; }
         .view-btn.active { background: #fff; shadow: 0 2px 4px rgba(0,0,0,0.1); color: #444; }
@@ -70,7 +76,7 @@
                 <div class="flex justify-center my-4">
                     <div class="bg-gray-100 p-1 rounded-full flex relative w-48">
                         <div id="segment-overlay" class="absolute left-1 top-1 w-[calc(50%-4px)] h-[calc(100%-8px)] bg-white rounded-full shadow-sm transition-all duration-300"></div>
-                        <button onclick="setPostType('meal')" class="flex-1 z-10 py-1.5 text-sm font-bold text-gray-700">用餐</button>
+                        <button onclick="setPostType('meal')" class="flex-1 z-10 py-1.5 text-sm font-bold text-gray-700">餐食</button>
                         <button onclick="setPostType('coffee')" class="flex-1 z-10 py-1.5 text-sm font-bold text-gray-500">咖啡</button>
                     </div>
                 </div>
@@ -96,7 +102,10 @@
                     </div>
 
                     <div id="shop-section">
-                        <input type="text" id="input-shop" placeholder="店名..." class="w-full p-3 bg-gray-50 rounded-xl text-sm outline-none mb-2 focus:bg-white focus:ring-2 focus:ring-gray-100">
+                        <!-- V3.5 新增：品項欄位 -->
+                        <input type="text" id="input-item" placeholder="吃了/喝了什麼 (例: 冰拿鐵)" class="w-full p-3 bg-gray-50 rounded-xl text-sm outline-none mb-2 focus:bg-white focus:ring-2 focus:ring-gray-100 font-bold">
+                        
+                        <input type="text" id="input-shop" placeholder="店名 (例: 星巴克)" class="w-full p-3 bg-gray-50 rounded-xl text-sm outline-none mb-2 focus:bg-white focus:ring-2 focus:ring-gray-100">
                         <div class="flex items-center gap-2">
                             <div class="relative flex-1">
                                 <i data-lucide="map-pin" class="absolute left-3 top-3.5 w-4 h-4 text-gray-400"></i>
@@ -150,14 +159,11 @@
         let currentRating = 3;
         let uploadedImageBase64 = null;
         let sourceMode = 'shop';
-        let calendarMonthOffset = 0;
         let statsMonthOffset = 0;
-        
-        // V3.4 新增：編輯模式的 ID 記錄
         let editingId = null;
 
         const defaultData = {
-            meal: [{ id: 1, date: '2025-05-20', displayDate: '05/20 12:30', shop: 'Mogu', address: '', price: 300, rating: 5, note: 'V3.4 功能：點擊卡片右上角的鉛筆圖示可以重新編輯紀錄。', img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&q=80', icon: '🍙' }],
+            meal: [{ id: 1, date: '2025-05-20', displayDate: '05/20 12:30', itemName: '招牌咖哩', shop: 'Mogu', address: '', price: 300, rating: 5, note: 'V3.5 更新：垂直月曆、餐食名稱欄位、咖啡新圖示！', img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&q=80', icon: '🍙' }],
             coffee: [],
             friends: [{ user: '小幫手', action: '提示', shop: '這裡', time: '剛剛', img: 'https://images.unsplash.com/photo-1552611052-33e04de081de', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Mogu' }]
         };
@@ -225,7 +231,8 @@
             if(!container) return;
             container.innerHTML = '';
             
-            const titles = { meal: '本日食記', coffee: '咖啡紀錄', friends: '好友動態', me: '我的帳務' };
+            // V3.5 改名：餐食紀錄
+            const titles = { meal: '餐食紀錄', coffee: '咖啡紀錄', friends: '好友動態', me: '我的帳務' };
             const colors = { meal: 'text-meal', coffee: 'text-coffee', friends: 'text-gray-700', me: 'text-gray-800' };
             document.getElementById('header-title').innerText = titles[currentTab];
             document.getElementById('header-title').className = `text-2xl font-bold tracking-widest ${colors[currentTab]}`;
@@ -251,7 +258,7 @@
             try {
                 if(currentTab === 'me') renderStats();
                 else if(currentTab === 'friends') renderFriends();
-                else if(viewMode === 'calendar') renderCalendar();
+                else if(viewMode === 'calendar') renderVerticalCalendar(); // V3.5 改用垂直月曆
                 else renderList();
             } catch (error) {
                 container.innerHTML = `<div class="p-4 text-center text-red-400 text-sm">載入錯誤，請嘗試重置。</div>`;
@@ -278,9 +285,27 @@
                     priceTag = `<div class="absolute bottom-2 right-2 bg-white/90 backdrop-blur px-2 py-1 rounded-lg text-xs font-bold text-gray-700">NT$ ${item.price}</div>`;
                 }
 
+                // V3.5 顯示邏輯：如果有品項名稱，顯示品項名稱(大)+店名(小)，否則只顯示店名(大)
+                let titleHtml = '';
+                if(item.itemName && item.itemName.trim() !== "") {
+                    titleHtml = `
+                        <div class="flex flex-col mb-1">
+                            <h3 class="font-bold text-gray-800 text-lg">${item.itemName}</h3>
+                            <span class="text-xs text-gray-500 font-medium">${item.shop}</span>
+                            <div class="flex mt-1">${stars}</div>
+                        </div>
+                    `;
+                } else {
+                    titleHtml = `
+                        <div class="flex justify-between items-start mb-1">
+                            <h3 class="font-bold text-gray-800 text-lg">${item.shop}</h3>
+                            <div class="flex">${stars}</div>
+                        </div>
+                    `;
+                }
+
                 const div = document.createElement('div');
                 div.className = 'card p-0 mb-6 overflow-hidden group';
-                // V3.4 新增：編輯按鈕 (pencil icon)
                 div.innerHTML = `
                     <div class="w-full h-56 bg-gray-100 relative">
                         <img src="${item.img}" loading="lazy" class="w-full h-full object-cover">
@@ -291,10 +316,7 @@
                         </div>
                     </div>
                     <div class="p-4">
-                        <div class="flex justify-between items-start mb-1">
-                            <h3 class="font-bold text-gray-800 text-lg">${item.shop}</h3>
-                            <div class="flex">${stars}</div>
-                        </div>
+                        ${titleHtml}
                         ${mapLink}
                         <p class="text-xs text-gray-400 mt-2 flex items-center"><i data-lucide="clock" class="w-3 h-3 mr-1"></i> ${item.displayDate}</p>
                         <p class="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap mt-2">${item.note}</p>
@@ -307,42 +329,72 @@
             else container.appendChild(fragment);
         }
 
-        function renderCalendar() {
+        // V3.5 垂直月曆渲染邏輯
+        function renderVerticalCalendar() {
             const container = document.getElementById('feed-container');
             const items = appData[currentTab] || [];
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = today.getMonth() + calendarMonthOffset;
-            const currentMonthDate = new Date(year, month, 1);
-            const displayYear = currentMonthDate.getFullYear();
-            const displayMonth = currentMonthDate.getMonth();
-            const daysInMonth = new Date(displayYear, displayMonth + 1, 0).getDate();
-            const firstDayIndex = currentMonthDate.getDay();
-
-            let navHtml = `
-            <div class="flex justify-between items-center px-4 mb-4">
-                <button onclick="changeMonth(-1)" class="p-2 bg-white rounded-full shadow-sm"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
-                <span class="font-bold text-lg text-gray-600">${displayYear}年 ${displayMonth + 1}月</span>
-                <button onclick="changeMonth(1)" class="p-2 bg-white rounded-full shadow-sm"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
-            </div>`;
             
-            let gridHtml = `<div class="calendar-grid">`;
-            const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
-            weekDays.forEach(d => gridHtml += `<div class="text-center text-xs text-gray-400 py-2">${d}</div>`);
-            for(let i=0; i<firstDayIndex; i++) gridHtml += `<div></div>`;
-            for(let d=1; d<=daysInMonth; d++) {
-                const checkDate = `${displayYear}-${String(displayMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                const dayItems = items.filter(i => i.date === checkDate);
-                const hasData = dayItems.length > 0;
-                const thumb = hasData ? dayItems[dayItems.length-1].img : '';
-                gridHtml += `
-                <div class="calendar-day ${hasData ? 'has-data' : ''}" onclick="${hasData ? `alert('該日有 ${dayItems.length} 筆紀錄')` : ''}">
-                    ${hasData ? `<img src="${thumb}" loading="lazy" class="calendar-img">` : ''}
-                    <span class="${hasData ? 'text-white drop-shadow-md' : 'text-gray-300'}">${d}</span>
-                </div>`;
+            const wrapper = document.createElement('div');
+            wrapper.className = 'calendar-wrapper';
+
+            const today = new Date();
+            // 渲染範圍：當前月 往前 6 個月 ~ 往後 6 個月 (共 13 個月)
+            const rangeStart = -6;
+            const rangeEnd = 6;
+
+            for (let i = rangeStart; i <= rangeEnd; i++) {
+                const targetDate = new Date(today.getFullYear(), today.getMonth() + i, 1);
+                const year = targetDate.getFullYear();
+                const month = targetDate.getMonth(); // 0-11
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                const firstDayIndex = new Date(year, month, 1).getDay();
+
+                // 月份區塊
+                const monthBlock = document.createElement('div');
+                monthBlock.className = 'calendar-month-block';
+                // 給當前月份一個 ID 以便自動滾動
+                if (i === 0) monthBlock.id = 'current-month-scroll-anchor';
+
+                // 標題 (黏性)
+                const title = document.createElement('div');
+                title.className = 'calendar-month-title';
+                title.innerText = `${year}年 ${month + 1}月`;
+                monthBlock.appendChild(title);
+
+                // Grid
+                let gridHtml = `<div class="calendar-grid">`;
+                // 星期標頭 (每個月份都顯示比較清楚，或只在最上面顯示。這裡選擇每個月份不顯示星期，只在最上方顯示一次比較乾淨？不，垂直滑動還是每個開頭顯示比較好，或者省略。)
+                // 為了簡潔，我們只顯示日期格子。如果需要星期，可以在這裡加。
+                
+                // 補空白
+                for(let j=0; j<firstDayIndex; j++) gridHtml += `<div></div>`;
+                
+                for(let d=1; d<=daysInMonth; d++) {
+                    const checkDate = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                    const dayItems = items.filter(item => item.date === checkDate);
+                    const hasData = dayItems.length > 0;
+                    const thumb = hasData ? dayItems[dayItems.length-1].img : '';
+                    
+                    gridHtml += `
+                    <div class="calendar-day ${hasData ? 'has-data' : ''}" onclick="${hasData ? `alert('該日有 ${dayItems.length} 筆紀錄')` : ''}">
+                        ${hasData ? `<img src="${thumb}" loading="lazy" class="calendar-img">` : ''}
+                        <span class="${hasData ? 'text-white drop-shadow-md' : 'text-gray-300'}">${d}</span>
+                    </div>`;
+                }
+                gridHtml += `</div>`;
+                monthBlock.innerHTML += gridHtml;
+                wrapper.appendChild(monthBlock);
             }
-            gridHtml += `</div>`;
-            container.innerHTML = navHtml + gridHtml;
+
+            container.appendChild(wrapper);
+
+            // 自動滾動到當前月份
+            setTimeout(() => {
+                const anchor = document.getElementById('current-month-scroll-anchor');
+                if (anchor) {
+                    anchor.scrollIntoView({ behavior: 'auto', block: 'start' });
+                }
+            }, 100);
         }
 
         function renderStats() {
@@ -410,7 +462,7 @@
 
         function switchTab(t) { currentTab = t; viewMode = 'list'; renderFeed(); }
         function setViewMode(mode) { viewMode = mode; renderFeed(); }
-        function changeMonth(offset) { calendarMonthOffset += offset; renderCalendar(); }
+        // V3.5 垂直滾動不需要 changeMonth 了，但為了不報錯保留空函數或未來擴充用
         function changeStatsMonth(offset) { statsMonthOffset += offset; renderFeed(); }
 
         function openModal() { 
@@ -420,50 +472,43 @@
             const now = new Date();
             const localIso = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
             document.getElementById('input-date').value = localIso;
-            document.getElementById('modal-title').innerText = "紀錄一下"; // 重置標題
-            document.getElementById('save-btn').innerText = "發佈"; // 重置按鈕
+            document.getElementById('modal-title').innerText = "紀錄一下"; 
+            document.getElementById('save-btn').innerText = "發佈"; 
         }
 
-        // V3.4 新增：編輯模式開啟函數
         function editItem(id) {
             const item = appData[currentTab].find(i => i.id === id);
             if (!item) return;
 
-            editingId = id; // 標記正在編輯的 ID
-            setPostType(currentTab); // 切換到該類別的顏色
+            editingId = id; 
+            setPostType(currentTab); 
 
-            // 回填資料
+            // V3.5 回填資料：新增品項
+            document.getElementById('input-item').value = item.itemName || '';
             document.getElementById('input-shop').value = item.shop;
             document.getElementById('input-address').value = item.address;
             document.getElementById('input-price').value = item.price || '';
             document.getElementById('input-note').value = item.note;
             
-            // 回填時間 (需要轉為 ISO 格式)
             const dateObj = new Date(item.fullDate || item.date);
             const localIso = new Date(dateObj.getTime() - (dateObj.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
             document.getElementById('input-date').value = localIso;
 
-            // 回填圖片
             uploadedImageBase64 = item.img;
             document.getElementById('preview-img').src = item.img;
             document.getElementById('preview-img').style.display = 'block';
             document.getElementById('upload-placeholder').style.display = 'none';
 
-            // 回填評分
             setRating(item.rating);
 
-            // 回填來源模式 (店家/自己做)
             if (item.shop === '自己做') {
                 toggleSource('home');
             } else {
                 toggleSource('shop');
             }
 
-            // 更改 UI 文字
             document.getElementById('modal-title').innerText = "編輯紀錄";
             document.getElementById('save-btn').innerText = "更新";
-
-            // 打開 Modal
             document.getElementById('add-modal').classList.remove('translate-y-full'); 
         }
 
@@ -477,7 +522,8 @@
         }
         function renderRatingInput() {
             const container = document.getElementById('rating-container');
-            const icon = postType === 'meal' ? '🍙' : '🫘';
+            // V3.5 咖啡 Emoji 更新為 ☕️
+            const icon = postType === 'meal' ? '🍙' : '☕️';
             container.innerHTML = '';
             for(let i=1; i<=5; i++) container.innerHTML += `<span onclick="setRating(${i})" class="${i<=currentRating ? '' : 'opacity-30'} cursor-pointer hover:scale-110 transition">${icon}</span>`;
         }
@@ -494,7 +540,6 @@
             } else {
                 document.getElementById('btn-shop').className = 'flex-1 py-2 rounded-full bg-gray-800 text-white text-xs font-bold transition';
                 document.getElementById('btn-home').className = 'flex-1 py-2 rounded-full bg-gray-100 text-gray-400 text-xs font-bold transition';
-                // 如果是從自己做切回來，且原本是編輯模式，則保留原店名，否則清空
                 if(document.getElementById('input-shop').value === '自己做') document.getElementById('input-shop').value = '';
                 document.getElementById('input-address').parentElement.parentElement.style.display = 'flex';
                 document.getElementById('price-section').style.display = 'block'; 
@@ -513,7 +558,9 @@
             );
         }
         function resetForm() {
-            editingId = null; // 清除編輯狀態
+            editingId = null; 
+            // V3.5 清空品項欄位
+            document.getElementById('input-item').value = '';
             document.getElementById('input-shop').value = '';
             document.getElementById('input-address').value = '';
             document.getElementById('input-price').value = '';
@@ -532,13 +579,14 @@
             document.getElementById('modal-title').innerText = "紀錄一下";
         }
 
-        // V3.4 升級版發佈邏輯 (支援新增與更新)
         function savePost() {
             const btn = document.getElementById('save-btn');
             if(btn.disabled) return;
             btn.innerText = '儲存中...';
             btn.disabled = true;
 
+            // V3.5 讀取品項名稱
+            const itemName = document.getElementById('input-item').value || '';
             const shop = document.getElementById('input-shop').value || '未命名';
             const address = document.getElementById('input-address').value || '';
             const price = document.getElementById('input-price').value;
@@ -551,38 +599,41 @@
 
             if (!appData[postType]) appData[postType] = [];
 
+            // V3.5 咖啡 Emoji
+            const iconChar = postType === 'meal' ? '🍙' : '☕️';
+
             if (editingId) {
-                // 更新模式
                 const index = appData[postType].findIndex(i => i.id === editingId);
                 if (index !== -1) {
                     appData[postType][index] = {
-                        ...appData[postType][index], // 保留原 ID
+                        ...appData[postType][index], 
                         date: dateKey,
                         fullDate: dateObj.toISOString(),
                         displayDate: displayDate,
+                        itemName: itemName, // 存入品項
                         shop: shop,
                         address: address,
                         price: price,
                         rating: currentRating,
                         note: note,
                         img: img,
-                        icon: postType === 'meal' ? '🍙' : '🫘'
+                        icon: iconChar
                     };
                 }
             } else {
-                // 新增模式
                 appData[postType].push({
                     id: Date.now(),
                     date: dateKey,       
                     fullDate: dateObj.toISOString(), 
                     displayDate: displayDate, 
+                    itemName: itemName, // 存入品項
                     shop: shop,
                     address: address,
                     price: price,
                     rating: currentRating,
                     note: note,
                     img: img,
-                    icon: postType === 'meal' ? '🍙' : '🫘'
+                    icon: iconChar
                 });
             }
             
@@ -593,7 +644,7 @@
                 renderFeed();
                 resetForm();
             } else {
-                if (!editingId) appData[postType].pop(); // 如果是新增失敗，才要回滾
+                if (!editingId) appData[postType].pop(); 
                 btn.innerText = editingId ? '更新' : '發佈';
                 btn.disabled = false;
             }
