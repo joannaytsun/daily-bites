@@ -5,26 +5,66 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Mogu V3.1</title>
+    <title>Mogu V3.2</title>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
-        body { font-family: 'Zen Maru Gothic', 'Nunito', sans-serif; background-color: #F2F2F2; display: flex; justify-content: center; min-height: 100vh; margin: 0; color: #4A4A4A; user-select: none; -webkit-tap-highlight-color: transparent; }
+        /* 基礎設定 */
+        body { font-family: 'Zen Maru Gothic', 'Nunito', sans-serif; background-color: #F2F2F2; display: flex; justify-content: center; min-height: 100vh; margin: 0; color: #4A4A4A; user-select: none; -webkit-tap-highlight-color: transparent; overflow: hidden; /* 防止整體滾動 */ }
+        
         #app-container { width: 100%; max-width: 420px; height: 100dvh; background-color: #FDFBF7; position: relative; overflow: hidden; display: flex; flex-direction: column; }
+        
+        /* 隱藏滾動條 */
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .glass-nav { background: rgba(253, 251, 247, 0.95); backdrop-filter: blur(10px); border-top: 1px solid rgba(0,0,0,0.05); }
-        .card { background: #FFFFFF; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: transform 0.2s ease; }
-        .bouncy:active { transform: scale(0.95); }
-        #add-modal { transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        
+        /* 玻璃擬態導航列 */
+        .glass-nav { background: rgba(253, 251, 247, 0.98); backdrop-filter: blur(10px); border-top: 1px solid rgba(0,0,0,0.05); }
+        
+        /* 卡片優化：減少陰影複雜度以提升效能 */
+        .card { background: #FFFFFF; border-radius: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); transform: translateZ(0); /* 開啟硬體加速 */ }
+        
+        /* 按鈕動畫 */
+        .bouncy:active { transform: scale(0.95); transition: transform 0.1s; }
+        
+        /* Modal 動畫 */
+        #add-modal { transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1); will-change: transform; }
+        
+        /* 配色變數 */
         .text-meal { color: #8DA399; } .bg-meal { background-color: #8DA399; }
         .text-coffee { color: #B09B82; } .bg-coffee { background-color: #B09B82; }
+        
+        /* 上傳預覽 */
         #preview-img { width: 100%; height: 100%; object-fit: cover; border-radius: 16px; display: none; }
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; padding: 10px; }
-        .calendar-day { aspect-ratio: 1; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; font-size: 12px; padding-top: 4px; position: relative; background: #fcfcfc; }
+        
+        /* 月曆修正：確保不超出螢幕寬度 */
+        .calendar-grid { 
+            display: grid; 
+            grid-template-columns: repeat(7, 1fr); 
+            gap: 4px; 
+            padding: 0 16px; /* 左右留邊 */
+            width: 100%; 
+            box-sizing: border-box; /* 關鍵：包含 padding 在寬度內 */
+        }
+        .calendar-day { 
+            aspect-ratio: 1; 
+            border-radius: 10px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: flex-start; 
+            font-size: 12px; 
+            padding-top: 4px; 
+            position: relative; 
+            background: #fcfcfc; 
+            overflow: hidden;
+        }
         .calendar-day.has-data { background: #fff; border: 1px solid #eee; cursor: pointer; }
-        .calendar-img { width: 80%; height: 80%; object-fit: cover; border-radius: 6px; margin-top: 2px; }
+        .calendar-img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; opacity: 0.8; z-index: 0; }
+        .calendar-day span { z-index: 10; font-weight: bold; text-shadow: 0 1px 2px rgba(255,255,255,0.8); }
+
+        /* 視圖切換器 */
         .view-toggle { background: #eee; border-radius: 20px; padding: 3px; display: flex; width: fit-content; margin: 0 auto; }
         .view-btn { padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: bold; color: #888; transition: all 0.2s; }
         .view-btn.active { background: #fff; shadow: 0 2px 4px rgba(0,0,0,0.1); color: #444; }
@@ -46,7 +86,8 @@
         </div>
 
         <!-- Content -->
-        <div class="flex-1 overflow-y-auto no-scrollbar px-4 pb-28" id="feed-container"></div>
+        <!-- 加入 will-change 優化滾動效能 -->
+        <div class="flex-1 overflow-y-auto no-scrollbar px-4 pb-28" id="feed-container" style="will-change: transform;"></div>
 
         <!-- Tab Bar -->
         <div class="glass-nav absolute bottom-0 w-full pb-8 pt-3 px-6 flex justify-between items-end z-20">
@@ -74,7 +115,6 @@
                     </div>
                 </div>
 
-                <!-- 預覽圖 -->
                 <div class="relative w-full aspect-[4/3] bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center mb-6 overflow-hidden">
                     <input type="file" id="file-input" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 z-20 cursor-pointer" onchange="handleImageUpload(this)">
                     <div id="upload-placeholder" class="flex flex-col items-center text-gray-400">
@@ -85,7 +125,6 @@
                 </div>
 
                 <div class="space-y-4">
-                    <!-- 日期時間選擇器 -->
                     <div class="flex items-center bg-gray-50 rounded-xl p-3">
                         <i data-lucide="calendar-clock" class="w-4 h-4 text-gray-400 mr-2"></i>
                         <input type="datetime-local" id="input-date" class="bg-transparent text-sm w-full outline-none text-gray-600">
@@ -128,6 +167,8 @@
     <script>
         lucide.createIcons();
         
+        // 核心資料變數
+        let appData = null; // 統一管理資料
         let currentTab = 'meal';
         let postType = 'meal';
         let viewMode = 'list';
@@ -138,47 +179,60 @@
         let statsMonthOffset = 0;
 
         const defaultData = {
-            meal: [{ id: 1, date: '2025-05-20', displayDate: '05/20 12:30', shop: 'Mogu Diner', address: '台北市信義區', price: 300, rating: 5, note: '歡迎回來 Mogu V3.1！', img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&q=80', icon: '🍙' }],
+            meal: [{ id: 1, date: '2025-05-20', displayDate: '05/20 12:30', shop: 'Mogu', address: '', price: 300, rating: 5, note: '歡迎使用 V3.2 優化版！', img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&q=80', icon: '🍙' }],
             coffee: [],
             friends: [{ user: '小幫手', action: '提示', shop: '這裡', time: '剛剛', img: 'https://images.unsplash.com/photo-1552611052-33e04de081de', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Mogu' }]
         };
 
-        function loadData() {
+        // 資料讀取：只在初始化時執行一次，解決卡頓
+        function initData() {
             try {
                 const stored = localStorage.getItem('moguData_v3');
-                return stored ? JSON.parse(stored) : defaultData;
+                appData = stored ? JSON.parse(stored) : defaultData;
             } catch (e) {
-                console.error("資料讀取失敗，回復預設值", e);
-                return defaultData;
+                console.error("Data Load Error", e);
+                appData = defaultData;
             }
         }
-        function saveData(newData) { localStorage.setItem('moguData_v3', JSON.stringify(newData)); }
+        
+        // 儲存資料
+        function saveData() {
+            localStorage.setItem('moguData_v3', JSON.stringify(appData));
+        }
 
-        let appData = loadData();
+        // 初始化
+        initData();
 
+        // 渲染主流程
         function renderFeed() {
             const container = document.getElementById('feed-container');
             const viewToggle = document.getElementById('view-toggle-container');
             if(!container) return;
 
+            // 清空容器
             container.innerHTML = '';
             
+            // 設定標題
             const titles = { meal: '本日食記', coffee: '咖啡紀錄', friends: '好友動態', me: '我的帳務' };
             const colors = { meal: 'text-meal', coffee: 'text-coffee', friends: 'text-gray-700', me: 'text-gray-800' };
             document.getElementById('header-title').innerText = titles[currentTab];
             document.getElementById('header-title').className = `text-2xl font-bold tracking-widest ${colors[currentTab]}`;
 
+            // 設定底部導航狀態 (使用 classList 優化效能)
             ['meal', 'coffee', 'friends', 'me'].forEach(t => {
                 const icon = document.getElementById(`icon-${t}`);
                 const text = document.getElementById(`text-${t}`);
+                if(!icon) return;
+                
                 const isActive = t === currentTab;
                 const activeColor = t === 'meal' ? 'text-meal' : (t === 'coffee' ? 'text-coffee' : 'text-gray-800');
-                if(icon && text) {
-                    icon.className = `w-6 h-6 transition-colors ${isActive ? activeColor : 'text-gray-300'}`;
-                    text.className = `text-[10px] font-bold transition-colors ${isActive ? activeColor : 'text-gray-300'}`;
-                }
+                
+                // 重置
+                icon.className = `w-6 h-6 transition-colors ${isActive ? activeColor : 'text-gray-300'}`;
+                text.className = `text-[10px] font-bold transition-colors ${isActive ? activeColor : 'text-gray-300'}`;
             });
 
+            // 顯示/隱藏視圖切換器
             if(currentTab === 'meal' || currentTab === 'coffee') {
                 viewToggle.classList.remove('hidden');
                 document.getElementById('btn-view-list').className = `view-btn ${viewMode === 'list' ? 'active' : ''}`;
@@ -193,32 +247,41 @@
                 else if(viewMode === 'calendar') renderCalendar();
                 else renderList();
             } catch (error) {
-                container.innerHTML = `<div class="p-4 text-center text-red-400 text-sm">錯誤，請嘗試重置。</div>`;
+                console.error(error);
+                container.innerHTML = `<div class="p-4 text-center text-red-400 text-sm">載入錯誤，請嘗試重置。</div>`;
             }
+            
+            // 重新初始化圖標
             lucide.createIcons();
         }
 
         function renderList() {
             const container = document.getElementById('feed-container');
             const items = appData[currentTab] || [];
+            
+            // 使用 fragment 減少 DOM 操作
+            const fragment = document.createDocumentFragment();
+
             [...items].sort((a,b) => new Date(b.fullDate || b.date) - new Date(a.fullDate || a.date)).forEach(item => {
                 let stars = '';
                 for(let i=0; i<5; i++) stars += `<span class="${i < item.rating ? '' : 'opacity-20 grayscale'} text-sm mr-0.5">${item.icon}</span>`;
+                
                 let mapLink = '';
                 if(item.address && item.address.length > 0) {
                     mapLink = `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.address)}" target="_blank" class="text-xs text-blue-500 flex items-center mt-1 hover:underline"><i data-lucide="map-pin" class="w-3 h-3 mr-1"></i> ${item.address}</a>`;
                 }
                 
-                // 價格顯示邏輯：如果有價格且大於0才顯示
                 let priceTag = '';
                 if(item.price && item.price > 0) {
                     priceTag = `<div class="absolute bottom-2 right-2 bg-white/90 backdrop-blur px-2 py-1 rounded-lg text-xs font-bold text-gray-700">NT$ ${item.price}</div>`;
                 }
 
-                container.innerHTML += `
-                <div class="card p-0 mb-6 overflow-hidden group">
+                const div = document.createElement('div');
+                div.className = 'card p-0 mb-6 overflow-hidden group';
+                // 圖片加入 loading="lazy" 優化效能
+                div.innerHTML = `
                     <div class="w-full h-56 bg-gray-100 relative">
-                        <img src="${item.img}" class="w-full h-full object-cover">
+                        <img src="${item.img}" loading="lazy" class="w-full h-full object-cover">
                         ${priceTag}
                         <button onclick="deleteItem(${item.id})" class="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     </div>
@@ -231,9 +294,15 @@
                         <p class="text-xs text-gray-400 mt-2 flex items-center"><i data-lucide="clock" class="w-3 h-3 mr-1"></i> ${item.displayDate}</p>
                         <p class="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap mt-2">${item.note}</p>
                     </div>
-                </div>`;
+                `;
+                fragment.appendChild(div);
             });
-            if(items.length === 0) container.innerHTML = `<div class="text-center mt-20 text-gray-300 text-sm">目前沒有紀錄</div>`;
+            
+            if(items.length === 0) {
+                container.innerHTML = `<div class="text-center mt-20 text-gray-300 text-sm">目前沒有紀錄</div>`;
+            } else {
+                container.appendChild(fragment);
+            }
         }
 
         function renderCalendar() {
@@ -254,25 +323,33 @@
                 <span class="font-bold text-lg text-gray-600">${displayYear}年 ${displayMonth + 1}月</span>
                 <button onclick="changeMonth(1)" class="p-2 bg-white rounded-full shadow-sm"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
             </div>`;
+            
             let gridHtml = `<div class="calendar-grid">`;
             const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
             weekDays.forEach(d => gridHtml += `<div class="text-center text-xs text-gray-400 py-2">${d}</div>`);
+            
+            // 補空白
             for(let i=0; i<firstDayIndex; i++) gridHtml += `<div></div>`;
+            
+            // 渲染日期
             for(let d=1; d<=daysInMonth; d++) {
                 const checkDate = `${displayYear}-${String(displayMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
                 const dayItems = items.filter(i => i.date === checkDate);
                 const hasData = dayItems.length > 0;
+                // 取得最後一張圖作為封面
                 const thumb = hasData ? dayItems[dayItems.length-1].img : '';
+                
                 gridHtml += `
                 <div class="calendar-day ${hasData ? 'has-data' : ''}" onclick="${hasData ? `alert('該日有 ${dayItems.length} 筆紀錄')` : ''}">
-                    <span class="${hasData ? 'font-bold text-gray-800' : 'text-gray-300'}">${d}</span>
-                    ${hasData ? `<img src="${thumb}" class="calendar-img">` : ''}
+                    ${hasData ? `<img src="${thumb}" loading="lazy" class="calendar-img">` : ''}
+                    <span class="${hasData ? 'text-white drop-shadow-md' : 'text-gray-300'}">${d}</span>
                 </div>`;
             }
             gridHtml += `</div>`;
             container.innerHTML = navHtml + gridHtml;
         }
 
+        // 統計頁面 (優化版)
         function renderStats() {
             const container = document.getElementById('feed-container');
             const today = new Date();
@@ -284,8 +361,9 @@
             const filterByMonth = (list) => list.filter(i => i.date && i.date.startsWith(targetMonthStr));
             const mealMonthly = filterByMonth(appData.meal || []);
             const coffeeMonthly = filterByMonth(appData.coffee || []);
-            const mealTotal = mealMonthly.reduce((sum, item) => sum + Number(item.price || 0), 0);
-            const coffeeTotal = coffeeMonthly.reduce((sum, item) => sum + Number(item.price || 0), 0);
+            
+            const mealTotal = mealMonthly.reduce((sum, i) => sum + Number(i.price || 0), 0);
+            const coffeeTotal = coffeeMonthly.reduce((sum, i) => sum + Number(i.price || 0), 0);
             const grandTotal = mealTotal + coffeeTotal;
             const mealPercent = grandTotal > 0 ? (mealTotal/grandTotal)*100 : 0;
             const coffeePercent = grandTotal > 0 ? (coffeeTotal/grandTotal)*100 : 0;
@@ -357,10 +435,27 @@
             });
         }
 
-        function switchTab(t) { currentTab = t; viewMode = 'list'; renderFeed(); }
-        function setViewMode(mode) { viewMode = mode; renderFeed(); }
-        function changeMonth(offset) { calendarMonthOffset += offset; renderCalendar(); }
-        function changeStatsMonth(offset) { statsMonthOffset += offset; renderFeed(); }
+        // 操作邏輯
+        function switchTab(t) { 
+            currentTab = t; 
+            viewMode = 'list'; 
+            renderFeed(); 
+        }
+        
+        function setViewMode(mode) { 
+            viewMode = mode; 
+            renderFeed(); 
+        }
+        
+        function changeMonth(offset) { 
+            calendarMonthOffset += offset; 
+            renderCalendar(); 
+        }
+        
+        function changeStatsMonth(offset) { 
+            statsMonthOffset += offset; 
+            renderFeed(); 
+        }
 
         function openModal() { 
             document.getElementById('add-modal').classList.remove('translate-y-full'); 
@@ -370,7 +465,10 @@
             const localIso = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
             document.getElementById('input-date').value = localIso;
         }
-        function closeModal() { document.getElementById('add-modal').classList.add('translate-y-full'); }
+        
+        function closeModal() { 
+            document.getElementById('add-modal').classList.add('translate-y-full'); 
+        }
         
         function setPostType(type) {
             postType = type;
@@ -394,14 +492,14 @@
                 document.getElementById('btn-shop').className = 'flex-1 py-2 rounded-full bg-gray-100 text-gray-400 text-xs font-bold transition';
                 document.getElementById('input-shop').value = '自己做';
                 document.getElementById('input-address').parentElement.parentElement.style.display = 'none';
-                document.getElementById('price-section').style.display = 'none'; // 隱藏價格
-                document.getElementById('input-price').value = ''; // 清空價格
+                document.getElementById('price-section').style.display = 'none'; 
+                document.getElementById('input-price').value = ''; 
             } else {
                 document.getElementById('btn-shop').className = 'flex-1 py-2 rounded-full bg-gray-800 text-white text-xs font-bold transition';
                 document.getElementById('btn-home').className = 'flex-1 py-2 rounded-full bg-gray-100 text-gray-400 text-xs font-bold transition';
                 document.getElementById('input-shop').value = '';
                 document.getElementById('input-address').parentElement.parentElement.style.display = 'flex';
-                document.getElementById('price-section').style.display = 'block'; // 顯示價格
+                document.getElementById('price-section').style.display = 'block'; 
             }
         }
 
@@ -444,7 +542,6 @@
             toggleSource('shop');
             renderRatingInput();
             
-            // 重置按鈕狀態
             const btn = document.getElementById('save-btn');
             btn.innerText = '發佈';
             btn.disabled = false;
@@ -452,63 +549,61 @@
 
         function savePost() {
             const btn = document.getElementById('save-btn');
-            if(btn.disabled) return; // 防止重複點擊
+            if(btn.disabled) return;
             btn.innerText = '儲存中...';
             btn.disabled = true;
 
-            setTimeout(() => {
-                const shop = document.getElementById('input-shop').value || '未命名';
-                const address = document.getElementById('input-address').value || '';
-                const price = document.getElementById('input-price').value;
-                const note = document.getElementById('input-note').value;
-                const img = uploadedImageBase64 || 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=500&q=80';
-                
-                const dateInputVal = document.getElementById('input-date').value;
-                const dateObj = dateInputVal ? new Date(dateInputVal) : new Date();
+            // 移除 setTimeout，直接執行
+            const shop = document.getElementById('input-shop').value || '未命名';
+            const address = document.getElementById('input-address').value || '';
+            const price = document.getElementById('input-price').value;
+            const note = document.getElementById('input-note').value;
+            const img = uploadedImageBase64 || 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=500&q=80';
+            
+            const dateInputVal = document.getElementById('input-date').value;
+            const dateObj = dateInputVal ? new Date(dateInputVal) : new Date();
+            const dateKey = `${dateObj.getFullYear()}-${String(dateObj.getMonth()+1).padStart(2,'0')}-${String(dateObj.getDate()).padStart(2,'0')}`;
+            const displayDate = `${dateObj.getMonth()+1}/${dateObj.getDate()} ${String(dateObj.getHours()).padStart(2,'0')}:${String(dateObj.getMinutes()).padStart(2,'0')}`;
 
-                const dateKey = `${dateObj.getFullYear()}-${String(dateObj.getMonth()+1).padStart(2,'0')}-${String(dateObj.getDate()).padStart(2,'0')}`;
-                const displayDate = `${dateObj.getMonth()+1}/${dateObj.getDate()} ${String(dateObj.getHours()).padStart(2,'0')}:${String(dateObj.getMinutes()).padStart(2,'0')}`;
+            if (!appData[postType]) appData[postType] = [];
 
-                if (!appData[postType]) appData[postType] = [];
-
-                appData[postType].push({
-                    id: Date.now(),
-                    date: dateKey,       
-                    fullDate: dateObj.toISOString(), 
-                    displayDate: displayDate, 
-                    shop: shop,
-                    address: address,
-                    price: price,
-                    rating: currentRating,
-                    note: note,
-                    img: img,
-                    icon: postType === 'meal' ? '🍙' : '🫘'
-                });
-                saveData(appData);
-                closeModal();
-                
-                // 強制切換到剛發文的頁面並刷新
-                currentTab = postType;
-                viewMode = 'list';
-                renderFeed();
-                
-                // 重置表單狀態
-                resetForm();
-            }, 300); // 稍微延遲讓動畫順暢
+            appData[postType].push({
+                id: Date.now(),
+                date: dateKey,       
+                fullDate: dateObj.toISOString(), 
+                displayDate: displayDate, 
+                shop: shop,
+                address: address,
+                price: price,
+                rating: currentRating,
+                note: note,
+                img: img,
+                icon: postType === 'meal' ? '🍙' : '🫘'
+            });
+            
+            saveData(); // 儲存
+            closeModal(); // 立即關閉
+            
+            // 強制切換並刷新
+            currentTab = postType;
+            viewMode = 'list';
+            renderFeed();
+            
+            resetForm();
         }
 
         function deleteItem(id) {
-            if(confirm('確定要刪除這筆紀錄嗎？')) {
+            if(confirm('刪除這筆紀錄？')) {
                 if (appData[currentTab]) {
                     appData[currentTab] = appData[currentTab].filter(i => i.id !== id);
-                    saveData(appData);
-                    renderFeed(); // 立即刷新
+                    saveData();
+                    renderFeed();
                 }
             }
         }
 
         function clearData() {
-            if(confirm('警告：這將刪除所有紀錄並重置 App！\n建議先執行「匯出備份」。\n\n確定要清空嗎？')) {
+            if(confirm('警告：確定要重置所有資料嗎？')) {
                 localStorage.removeItem('moguData_v3');
                 location.reload();
             }
@@ -516,26 +611,27 @@
 
         function exportData() {
             const json = localStorage.getItem('moguData_v3');
-            if(!json) { alert('目前沒有資料可備份'); return; }
+            if(!json) { alert('無資料'); return; }
             navigator.clipboard.writeText(json).then(() => {
-                alert('資料代碼已複製到剪貼簿！');
-            }).catch(err => {
-                prompt('請手動全選複製以下代碼：', json);
+                alert('已複製備份代碼');
+            }).catch(() => {
+                prompt('請手動複製', json);
             });
         }
 
         function importData() {
-            const input = prompt('請貼上備份代碼：');
+            const input = prompt('請貼上備份代碼');
             if (input) {
                 try {
                     const parsed = JSON.parse(input);
                     if(parsed) {
-                        saveData(parsed);
-                        alert('資料還原成功！');
+                        appData = parsed;
+                        saveData();
+                        alert('還原成功');
                         location.reload();
                     }
-                } catch (e) {
-                    alert('代碼無效');
+                } catch {
+                    alert('代碼錯誤');
                 }
             }
         }
