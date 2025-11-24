@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Mogu v2.1</title>
+    <title>Mogu V3.0</title>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -16,7 +16,7 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .glass-nav { background: rgba(253, 251, 247, 0.95); backdrop-filter: blur(10px); border-top: 1px solid rgba(0,0,0,0.05); }
         .card { background: #FFFFFF; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: transform 0.2s ease; }
-        .bouncy:active { transform: scale(0.9); }
+        .bouncy:active { transform: scale(0.95); }
         #add-modal { transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
         .text-meal { color: #8DA399; } .bg-meal { background-color: #8DA399; }
         .text-coffee { color: #B09B82; } .bg-coffee { background-color: #B09B82; }
@@ -37,9 +37,7 @@
         <div class="pt-14 pb-2 px-6 bg-transparent z-10">
             <div class="flex justify-between items-center mb-2">
                 <h1 class="text-2xl font-bold tracking-widest text-gray-700" id="header-title">食記</h1>
-                <div class="flex gap-3">
-                    <!-- 重置按鈕移到設定區，避免誤觸 -->
-                </div>
+                <!-- 避免白畫面，移除重置按鈕，統一在我的頁面管理 -->
             </div>
             
             <div id="view-toggle-container" class="view-toggle hidden">
@@ -77,6 +75,7 @@
                     </div>
                 </div>
 
+                <!-- 預覽圖 -->
                 <div class="relative w-full aspect-[4/3] bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center mb-6 overflow-hidden">
                     <input type="file" id="file-input" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 z-20 cursor-pointer" onchange="handleImageUpload(this)">
                     <div id="upload-placeholder" class="flex flex-col items-center text-gray-400">
@@ -87,6 +86,12 @@
                 </div>
 
                 <div class="space-y-4">
+                    <!-- 日期時間選擇器 (新功能) -->
+                    <div class="flex items-center bg-gray-50 rounded-xl p-3">
+                        <i data-lucide="calendar-clock" class="w-4 h-4 text-gray-400 mr-2"></i>
+                        <input type="datetime-local" id="input-date" class="bg-transparent text-sm w-full outline-none text-gray-600">
+                    </div>
+
                     <div class="flex gap-3 mb-2">
                         <button onclick="toggleSource('shop')" id="btn-shop" class="flex-1 py-2 rounded-full bg-gray-800 text-white text-xs font-bold">店家</button>
                         <button onclick="toggleSource('home')" id="btn-home" class="flex-1 py-2 rounded-full bg-gray-100 text-gray-400 text-xs font-bold">自己做</button>
@@ -131,24 +136,37 @@
         let uploadedImageBase64 = null;
         let sourceMode = 'shop';
         let calendarMonthOffset = 0;
+        let statsMonthOffset = 0; // 統計頁面的月份切換
 
+        // 預設資料
         const defaultData = {
-            meal: [{ id: 1, date: '2025-05-20', displayDate: '5/20 12:30', shop: 'Mogu Diner', address: '台北市信義區', price: 300, rating: 5, note: '範例：點擊地址可跳轉地圖', img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&q=80', icon: '🍙' }],
+            meal: [{ id: 1, date: '2025-05-20', displayDate: '05/20 12:30', shop: 'Mogu Diner', address: '台北市信義區', price: 300, rating: 5, note: '歡迎回來！如果不小心白畫面，可以到「我的」下方按重置。', img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&q=80', icon: '🍙' }],
             coffee: [],
             friends: [{ user: '小幫手', action: '提示', shop: '這裡', time: '剛剛', img: 'https://images.unsplash.com/photo-1552611052-33e04de081de', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Mogu' }]
         };
 
+        // 安全讀取資料
         function loadData() {
-            const stored = localStorage.getItem('moguData_v2');
-            return stored ? JSON.parse(stored) : defaultData;
+            try {
+                const stored = localStorage.getItem('moguData_v3');
+                return stored ? JSON.parse(stored) : defaultData;
+            } catch (e) {
+                console.error("資料讀取失敗，回復預設值", e);
+                return defaultData;
+            }
         }
-        function saveData(newData) { localStorage.setItem('moguData_v2', JSON.stringify(newData)); }
+        function saveData(newData) { localStorage.setItem('moguData_v3', JSON.stringify(newData)); }
 
         let appData = loadData();
 
+        // 渲染主流程
         function renderFeed() {
             const container = document.getElementById('feed-container');
             const viewToggle = document.getElementById('view-toggle-container');
+            
+            // 安全防護：如果 container 找不到（HTML結構錯誤），則停止
+            if(!container) return;
+
             container.innerHTML = '';
             
             const titles = { meal: '本日食記', coffee: '咖啡紀錄', friends: '好友動態', me: '我的帳務' };
@@ -161,8 +179,10 @@
                 const text = document.getElementById(`text-${t}`);
                 const isActive = t === currentTab;
                 const activeColor = t === 'meal' ? 'text-meal' : (t === 'coffee' ? 'text-coffee' : 'text-gray-800');
-                icon.className = `w-6 h-6 transition-colors ${isActive ? activeColor : 'text-gray-300'}`;
-                text.className = `text-[10px] font-bold transition-colors ${isActive ? activeColor : 'text-gray-300'}`;
+                if(icon && text) {
+                    icon.className = `w-6 h-6 transition-colors ${isActive ? activeColor : 'text-gray-300'}`;
+                    text.className = `text-[10px] font-bold transition-colors ${isActive ? activeColor : 'text-gray-300'}`;
+                }
             });
 
             if(currentTab === 'meal' || currentTab === 'coffee') {
@@ -173,18 +193,24 @@
                 viewToggle.classList.add('hidden');
             }
 
-            if(currentTab === 'me') renderStats();
-            else if(currentTab === 'friends') renderFriends();
-            else if(viewMode === 'calendar') renderCalendar();
-            else renderList();
+            try {
+                if(currentTab === 'me') renderStats();
+                else if(currentTab === 'friends') renderFriends();
+                else if(viewMode === 'calendar') renderCalendar();
+                else renderList();
+            } catch (error) {
+                container.innerHTML = `<div class="p-4 text-center text-red-400 text-sm">頁面發生錯誤，請嘗試重置。<br>${error.message}</div>`;
+            }
             
             lucide.createIcons();
         }
 
+        // 渲染列表
         function renderList() {
             const container = document.getElementById('feed-container');
             const items = appData[currentTab] || [];
-            [...items].reverse().forEach(item => {
+            // 排序：日期新的在上面
+            [...items].sort((a,b) => new Date(b.fullDate || b.date) - new Date(a.fullDate || a.date)).forEach(item => {
                 let stars = '';
                 for(let i=0; i<5; i++) stars += `<span class="${i < item.rating ? '' : 'opacity-20 grayscale'} text-sm mr-0.5">${item.icon}</span>`;
                 let mapLink = '';
@@ -212,6 +238,7 @@
             if(items.length === 0) container.innerHTML = `<div class="text-center mt-20 text-gray-300 text-sm">目前沒有紀錄</div>`;
         }
 
+        // 渲染月曆
         function renderCalendar() {
             const container = document.getElementById('feed-container');
             const items = appData[currentTab] || [];
@@ -240,7 +267,7 @@
                 const hasData = dayItems.length > 0;
                 const thumb = hasData ? dayItems[dayItems.length-1].img : '';
                 gridHtml += `
-                <div class="calendar-day ${hasData ? 'has-data' : ''}">
+                <div class="calendar-day ${hasData ? 'has-data' : ''}" onclick="${hasData ? `alert('該日有 ${dayItems.length} 筆紀錄')` : ''}">
                     <span class="${hasData ? 'font-bold text-gray-800' : 'text-gray-300'}">${d}</span>
                     ${hasData ? `<img src="${thumb}" class="calendar-img">` : ''}
                 </div>`;
@@ -249,59 +276,87 @@
             container.innerHTML = navHtml + gridHtml;
         }
 
+        // 渲染統計 (可切換月份)
         function renderStats() {
             const container = document.getElementById('feed-container');
-            const now = new Date();
-            const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-            const filterByMonth = (list) => list.filter(i => i.date.startsWith(currentMonthStr));
-            const mealMonthly = filterByMonth(appData.meal);
-            const coffeeMonthly = filterByMonth(appData.coffee);
-            const mealTotal = mealMonthly.reduce((sum, item) => sum + Number(item.price), 0);
-            const coffeeTotal = coffeeMonthly.reduce((sum, item) => sum + Number(item.price), 0);
+            const today = new Date();
+            
+            // 計算統計目標月份
+            const targetDate = new Date(today.getFullYear(), today.getMonth() + statsMonthOffset, 1);
+            const targetYear = targetDate.getFullYear();
+            const targetMonth = targetDate.getMonth() + 1;
+            const targetMonthStr = `${targetYear}-${String(targetMonth).padStart(2,'0')}`;
+
+            const filterByMonth = (list) => list.filter(i => i.date && i.date.startsWith(targetMonthStr));
+            
+            const mealMonthly = filterByMonth(appData.meal || []);
+            const coffeeMonthly = filterByMonth(appData.coffee || []);
+            
+            const mealTotal = mealMonthly.reduce((sum, item) => sum + Number(item.price || 0), 0);
+            const coffeeTotal = coffeeMonthly.reduce((sum, item) => sum + Number(item.price || 0), 0);
             const grandTotal = mealTotal + coffeeTotal;
+
+            // 百分比
+            const mealPercent = grandTotal > 0 ? (mealTotal/grandTotal)*100 : 0;
+            const coffeePercent = grandTotal > 0 ? (coffeeTotal/grandTotal)*100 : 0;
 
             container.innerHTML = `
             <div class="px-2">
-                <div class="text-center mb-6 mt-4">
-                    <p class="text-sm text-gray-400 mb-1">${now.getMonth()+1}月 總支出</p>
+                <!-- 統計月份切換 -->
+                <div class="flex justify-between items-center px-8 mb-2 mt-4">
+                    <button onclick="changeStatsMonth(-1)" class="p-2 text-gray-400 hover:text-gray-600"><i data-lucide="chevron-left" class="w-6 h-6"></i></button>
+                    <div class="text-center">
+                        <p class="text-xs text-gray-400 mb-1">${targetYear}年</p>
+                        <h2 class="text-xl font-bold text-gray-800">${targetMonth}月 總支出</h2>
+                    </div>
+                    <button onclick="changeStatsMonth(1)" class="p-2 text-gray-400 hover:text-gray-600"><i data-lucide="chevron-right" class="w-6 h-6"></i></button>
+                </div>
+                
+                <div class="text-center mb-6">
                     <h2 class="text-4xl font-bold text-gray-800">NT$ ${grandTotal.toLocaleString()}</h2>
                 </div>
+
                 <div class="grid grid-cols-2 gap-4 mb-6">
                     <div class="bg-white p-5 rounded-2xl shadow-sm flex flex-col items-center relative overflow-hidden">
                         <div class="absolute top-0 left-0 w-1 h-full bg-meal"></div>
                         <i data-lucide="utensils" class="w-6 h-6 text-meal mb-2"></i>
-                        <span class="text-xs text-gray-400">三餐花費</span>
+                        <span class="text-xs text-gray-400">三餐</span>
                         <span class="text-xl font-bold text-gray-700 mt-1">$${mealTotal.toLocaleString()}</span>
-                        <span class="text-[10px] text-gray-300 mt-1">${mealMonthly.length} 筆紀錄</span>
+                        <span class="text-[10px] text-gray-300 mt-1">${mealMonthly.length} 筆</span>
                     </div>
                     <div class="bg-white p-5 rounded-2xl shadow-sm flex flex-col items-center relative overflow-hidden">
                         <div class="absolute top-0 left-0 w-1 h-full bg-coffee"></div>
                         <i data-lucide="coffee" class="w-6 h-6 text-coffee mb-2"></i>
-                        <span class="text-xs text-gray-400">咖啡花費</span>
+                        <span class="text-xs text-gray-400">咖啡</span>
                         <span class="text-xl font-bold text-gray-700 mt-1">$${coffeeTotal.toLocaleString()}</span>
-                        <span class="text-[10px] text-gray-300 mt-1">${coffeeMonthly.length} 筆紀錄</span>
-                    </div>
-                </div>
-                <div class="bg-white p-6 rounded-2xl shadow-sm mb-6">
-                    <h3 class="font-bold text-gray-600 mb-4 text-sm">支出佔比</h3>
-                    <div class="w-full h-4 bg-gray-100 rounded-full overflow-hidden flex">
-                        <div style="width: ${(mealTotal/grandTotal)*100 || 0}%" class="h-full bg-meal"></div>
-                        <div style="width: ${(coffeeTotal/grandTotal)*100 || 0}%" class="h-full bg-coffee"></div>
+                        <span class="text-[10px] text-gray-300 mt-1">${coffeeMonthly.length} 筆</span>
                     </div>
                 </div>
 
-                <!-- 備份還原區 -->
-                <div class="bg-white p-4 rounded-2xl shadow-sm mb-8">
-                    <h3 class="font-bold text-gray-600 mb-3 text-sm">資料管理 (備份/轉移)</h3>
+                <div class="bg-white p-6 rounded-2xl shadow-sm mb-6">
+                    <h3 class="font-bold text-gray-600 mb-4 text-sm">支出佔比</h3>
+                    <div class="w-full h-4 bg-gray-100 rounded-full overflow-hidden flex">
+                        <div style="width: ${mealPercent}%" class="h-full bg-meal"></div>
+                        <div style="width: ${coffeePercent}%" class="h-full bg-coffee"></div>
+                    </div>
+                    <div class="flex justify-between mt-2 text-xs text-gray-400">
+                        <span class="flex items-center"><div class="w-2 h-2 rounded-full bg-meal mr-1"></div>三餐 ${Math.round(mealPercent)}%</span>
+                        <span class="flex items-center"><div class="w-2 h-2 rounded-full bg-coffee mr-1"></div>咖啡 ${Math.round(coffeePercent)}%</span>
+                    </div>
+                </div>
+
+                <!-- 資料管理 -->
+                <div class="bg-white p-4 rounded-2xl shadow-sm mb-8 border border-gray-100">
+                    <h3 class="font-bold text-gray-600 mb-3 text-sm">資料管理 (換手機用)</h3>
                     <div class="flex gap-3">
                         <button onclick="exportData()" class="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-gray-200">
-                            <i data-lucide="download" class="w-4 h-4"></i> 匯出代碼
+                            <i data-lucide="download" class="w-4 h-4"></i> 匯出備份
                         </button>
                         <button onclick="importData()" class="flex-1 bg-gray-800 text-white py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-gray-700">
-                            <i data-lucide="upload" class="w-4 h-4"></i> 匯入代碼
+                            <i data-lucide="upload" class="w-4 h-4"></i> 匯入還原
                         </button>
                     </div>
-                    <button onclick="clearData()" class="w-full mt-3 text-red-400 text-xs py-2">清空所有資料 (重置)</button>
+                    <button onclick="clearData()" class="w-full mt-3 text-red-300 text-xs py-2 hover:text-red-500">重置所有資料 (修復白畫面)</button>
                 </div>
             </div>`;
         }
@@ -309,7 +364,7 @@
         function renderFriends() {
             const container = document.getElementById('feed-container');
             container.innerHTML = `<div class="p-4 bg-gray-100 rounded-xl text-center text-xs text-gray-400 mb-4">好友功能需連網</div>`;
-            appData.friends.forEach(item => {
+            (appData.friends || []).forEach(item => {
                 container.innerHTML += `
                 <div class="card p-4 mb-4 flex gap-4">
                     <div class="w-10 h-10 rounded-full bg-gray-100 overflow-hidden"><img src="${item.avatar}" class="w-full h-full object-cover"></div>
@@ -327,7 +382,17 @@
         function switchTab(t) { currentTab = t; viewMode = 'list'; renderFeed(); }
         function setViewMode(mode) { viewMode = mode; renderFeed(); }
         function changeMonth(offset) { calendarMonthOffset += offset; renderCalendar(); }
-        function openModal() { document.getElementById('add-modal').classList.remove('translate-y-full'); setPostType(currentTab === 'coffee' ? 'coffee' : 'meal'); resetForm(); }
+        function changeStatsMonth(offset) { statsMonthOffset += offset; renderFeed(); } // 統計月切換
+
+        function openModal() { 
+            document.getElementById('add-modal').classList.remove('translate-y-full'); 
+            setPostType(currentTab === 'coffee' ? 'coffee' : 'meal'); 
+            resetForm(); 
+            // 設定預設時間為現在 (考慮時區)
+            const now = new Date();
+            const localIso = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+            document.getElementById('input-date').value = localIso;
+        }
         function closeModal() { document.getElementById('add-modal').classList.add('translate-y-full'); }
         
         function setPostType(type) {
@@ -381,6 +446,7 @@
                     document.getElementById('preview-img').src = e.target.result;
                     document.getElementById('preview-img').style.display = 'block';
                     document.getElementById('upload-placeholder').style.display = 'none';
+                    // 備註：網頁端直接讀取 EXIF 較複雜，此處仍維持手動調整時間
                 }
                 reader.readAsDataURL(input.files[0]);
             }
@@ -406,14 +472,21 @@
             const price = document.getElementById('input-price').value;
             const note = document.getElementById('input-note').value;
             const img = uploadedImageBase64 || 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=500&q=80';
-            const now = new Date();
-            const dateKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-            const displayDate = `${now.getMonth()+1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+            
+            // 取得使用者選擇的時間
+            const dateInputVal = document.getElementById('input-date').value;
+            const dateObj = dateInputVal ? new Date(dateInputVal) : new Date();
+
+            const dateKey = `${dateObj.getFullYear()}-${String(dateObj.getMonth()+1).padStart(2,'0')}-${String(dateObj.getDate()).padStart(2,'0')}`;
+            const displayDate = `${dateObj.getMonth()+1}/${dateObj.getDate()} ${String(dateObj.getHours()).padStart(2,'0')}:${String(dateObj.getMinutes()).padStart(2,'0')}`;
+
+            if (!appData[postType]) appData[postType] = [];
 
             appData[postType].push({
                 id: Date.now(),
-                date: dateKey,
-                displayDate: displayDate,
+                date: dateKey,       // YYYY-MM-DD
+                fullDate: dateObj.toISOString(), // 完整時間排序用
+                displayDate: displayDate, // UI顯示用
                 shop: shop,
                 address: address,
                 price: price,
@@ -430,45 +503,41 @@
 
         function deleteItem(id) {
             if(confirm('刪除紀錄？')) {
-                appData[currentTab] = appData[currentTab].filter(i => i.id !== id);
-                saveData(appData);
-                renderFeed();
+                if (appData[currentTab]) {
+                    appData[currentTab] = appData[currentTab].filter(i => i.id !== id);
+                    saveData(appData);
+                    renderFeed();
+                }
             }
         }
 
         function clearData() {
-            if(confirm('警告：這將刪除所有紀錄！建議先匯出備份。確定嗎？')) {
-                localStorage.removeItem('moguData_v2');
+            if(confirm('警告：這將刪除所有紀錄並重置 App！\n建議先執行「匯出備份」。\n\n確定要清空嗎？')) {
+                localStorage.removeItem('moguData_v3');
                 location.reload();
             }
         }
 
-        // 備份功能
         function exportData() {
-            const json = localStorage.getItem('moguData_v2');
+            const json = localStorage.getItem('moguData_v3');
             if(!json) { alert('目前沒有資料可備份'); return; }
-            
-            // 複製到剪貼簿 (適合手機)
             navigator.clipboard.writeText(json).then(() => {
-                alert('資料代碼已複製到剪貼簿！\n\n請將它貼到備忘錄或 LINE 存起來。');
+                alert('資料代碼已複製到剪貼簿！\n\n請將它貼到備忘錄存起來。');
             }).catch(err => {
-                console.error('複製失敗', err);
+                console.error(err);
                 prompt('請手動全選複製以下代碼：', json);
             });
         }
 
-        // 還原功能
         function importData() {
-            const input = prompt('請貼上之前備份的資料代碼：');
+            const input = prompt('請貼上備份代碼：');
             if (input) {
                 try {
                     const parsed = JSON.parse(input);
-                    if(parsed.meal && parsed.coffee) {
+                    if(parsed) { // 簡單檢查
                         saveData(parsed);
                         alert('資料還原成功！');
                         location.reload();
-                    } else {
-                        alert('資料格式錯誤');
                     }
                 } catch (e) {
                     alert('代碼無效，請確認是否完整複製。');
@@ -476,6 +545,7 @@
             }
         }
 
+        // 啟動渲染
         renderFeed();
     </script>
 </body>
